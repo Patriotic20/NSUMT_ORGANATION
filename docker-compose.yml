@@ -6,41 +6,56 @@ services:
       context: ./university_auth
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://user:password@shared_db:5432/university_shared_db
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DATABASE_URL=postgresql://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
+      - RABBITMQ_URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
     networks:
       - university_network
+    depends_on:
+      shared_db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   university_organization:
     build:
       context: ./university_organization
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://user:password@shared_db:5432/university_shared_db
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DATABASE_URL=postgresql://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
+      - RABBITMQ_URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
     networks:
       - university_network
+    depends_on:
+      shared_db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   university_student_test:
     build:
       context: ./university_student_test
       dockerfile: Dockerfile
     environment:
-      - DATABASE_URL=postgresql://user:password@student_test_db:5432/university_student_db
-      - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
+      - DATABASE_URL=postgresql://i6arf3t:odks953@student_test_db:5432/university_student_db
+      - RABBITMQ_URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
     networks:
       - university_network
+    depends_on:
+      shared_db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
 
   shared_db:
     image: postgres:15
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=qwey189t
+      - POSTGRES_PASSWORD=7opsd95sd
       - POSTGRES_DB=university_shared_db
     volumes:
       - shared_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d university_shared_db"]
+      test: ["CMD-SHELL", "pg_isready -U qwey189t -d university_shared_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -51,13 +66,13 @@ services:
   student_test_db:
     image: postgres:15
     environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
+      - POSTGRES_USER=i6arf3t
+      - POSTGRES_PASSWORD=odks953
       - POSTGRES_DB=university_student_db
     volumes:
       - student_test_db_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d university_student_db"]
+      test: ["CMD-SHELL", "pg_isready -U i6arf3t -d university_student_db"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -68,8 +83,8 @@ services:
   rabbitmq:
     image: rabbitmq:3.12-management
     environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_DEFAULT_USER=ag62efg
+      - RABBITMQ_DEFAULT_PASS=lidf43r
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
