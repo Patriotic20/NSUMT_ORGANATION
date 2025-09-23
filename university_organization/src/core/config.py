@@ -58,6 +58,11 @@ class JwtConfig(BaseModel):
     
 class HemisConfig(BaseModel):
     base_url: str
+    
+class RabbitMqSettings(BaseModel):
+
+    url: str
+    queue_name: str
 
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -74,5 +79,6 @@ class AppSettings(BaseSettings):
     db: DatabaseConfig
     jwt: JwtConfig
     admin: AdminData
+    rabbit: RabbitMqSettings
 
 settings = AppSettings()

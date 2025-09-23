@@ -5,12 +5,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-
-
-
-
-
-
 class DatabaseConfig(BaseModel):
     url: PostgresDsn
     echo: bool = False
@@ -35,8 +29,10 @@ class JwtConfig(BaseModel):
     algorithm: str
     
     
-class HemisConfig(BaseModel):
-    base_url: str
+class RabbitMqSettings(BaseModel):
+    
+    url: str
+    queue_name: str
 
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -46,8 +42,8 @@ class AppSettings(BaseSettings):
         env_prefix="APP_CONFIG__",
     )
 
-    hemis: HemisConfig = HemisConfig(base_url="https://student.ndki.uz/rest/v1")
     db: DatabaseConfig
     jwt: JwtConfig
+    rabbit: RabbitMqSettings
 
 settings = AppSettings()

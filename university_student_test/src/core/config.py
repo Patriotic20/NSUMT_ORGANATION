@@ -58,7 +58,10 @@ class DatabaseConfig(BaseModel):
         "pk": "pk_%(table_name)s",
     }
 
-
+class RabbitMqSettings(BaseModel):
+    
+    url: str
+    queue_name: str
 
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -75,6 +78,7 @@ class AppSettings(BaseSettings):
     jwt: JwtConfig
     file_url: FileUrl
     admin: AdminData
+    rabbit: RabbitMqSettings
     
     
     

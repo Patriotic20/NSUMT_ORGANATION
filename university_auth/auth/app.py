@@ -12,11 +12,13 @@ from faststream import FastStream
 from faststream.rabbit import RabbitBroker
 import asyncio
 
-broker = RabbitBroker("amqp://guest:guest@localhost:5672/")
+from core.config import settings
+
+broker = RabbitBroker(settings.rabbit.url)
 app = FastStream(broker)
 
 
-@broker.subscriber("auth.validate_token")
+@broker.subscriber(settings.rabbit.queue_name)
 async def validate_token_subscriber(token: str) -> TokenPaylod:
     try:
         payload = jwt.decode(

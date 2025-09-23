@@ -4,16 +4,16 @@ from typing import Annotated , Callable
 
 from auth.schemas.auth import TokenPaylod
 from auth.utils.security import oauth2_scheme
-
+from core.config import settings
 
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> TokenPaylod:
-    async with RabbitBroker("amqp://guest:guest@localhost:5672/") as broker:
+    async with RabbitBroker(settings.rabbit.url) as broker:
         response = await broker.publish(
             token,
-            "auth.validate_token",
+            settings.rabbit.queue_name,
             rpc=True,
             rpc_timeout=5,
         )
