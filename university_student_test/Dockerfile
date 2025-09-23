@@ -10,8 +10,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY src/ .
 
-RUN chmod +x prestart.sh
+# RUN chmod +x prestart.sh
 RUN chmod +x run
 
-ENTRYPOINT ["./prestart.sh"]
+# ENTRYPOINT ["./prestart.sh"]
 CMD ["./run"]
