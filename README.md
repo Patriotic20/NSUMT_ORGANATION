@@ -48,6 +48,8 @@ cd NSUMT_ORGANATION
 ```
 ## 📂 Loyihaning tuzilishi
 
+
+```bash
 NSUMT_ORGANATION/
 │
 ├── university_auth/
@@ -67,3 +69,4 @@ NSUMT_ORGANATION/
 │
 ├── docker-compose.yml
 └── nginx.conf
+```
