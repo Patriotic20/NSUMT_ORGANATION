@@ -69,4 +69,3 @@ NSUMT_ORGANATION/
 │
 ├── docker-compose.yml
 └── nginx.conf
-```
