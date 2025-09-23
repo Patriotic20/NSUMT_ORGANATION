@@ -45,7 +45,7 @@ Ilova quyidagi xizmatlardan iborat:
 ```bash
 git clone https://github.com/Patriotic20/NSUMT_ORGANATION.git
 cd NSUMT_ORGANATION
-
+```
 ## 📂 Loyihaning tuzilishi
 
 NSUMT_ORGANATION/
