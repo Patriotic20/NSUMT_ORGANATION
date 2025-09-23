@@ -6,7 +6,7 @@ services:
       context: ./university_auth
       dockerfile: Dockerfile
     env_file:
-      - .env
+      - ./university_auth/.env
     environment:
       - DATABASE_URL=postgresql://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
       - RABBITMQ_URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
@@ -23,7 +23,7 @@ services:
       context: ./university_organization
       dockerfile: Dockerfile
     env_file:
-      - .env
+      - ./university_organization/.env
     environment:
       - DATABASE_URL=postgresql://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
       - RABBITMQ_URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
@@ -40,7 +40,7 @@ services:
       context: ./university_student_test
       dockerfile: Dockerfile
     env_file:
-      - .env
+      - ./university_student_test/.env
     environment:
       - DATABASE_URL=postgresql://i6arf3t:odks953@student_test_db:5432/university_student_db
       - RABBITMQ_URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
