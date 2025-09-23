@@ -1,6 +1,8 @@
 from fastapi import FastAPI
 from core.config import settings
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+
 from router import router as api_router
 from core.lifespan.lifespan import lifespan
 import uvicorn
@@ -15,6 +17,16 @@ app = FastAPI(
 app.mount("/uploads" , StaticFiles(directory="uploads") , name="uploads")
 
 app.include_router(api_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     uvicorn.run(
