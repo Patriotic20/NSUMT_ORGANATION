@@ -26,7 +26,7 @@ def get_department_service(session: AsyncSession = Depends(db_helper.session_get
 async def create(
     create_data: DepartmentCreate,
     service: DepartmentService = Depends(get_department_service),
-    _: User = Depends(require_permission("create:departments"))
+    # _: User = Depends(require_permission("create:departments"))
 ):
     return await service.create(create_data=create_data)
 
@@ -35,7 +35,7 @@ async def create(
 async def get_all(
     pagination: GetAll = Depends(),
     service: DepartmentService = Depends(get_department_service),
-    _: User = Depends(require_permission("read:departments"))
+    # _: User = Depends(require_permission("read:departments"))
 ):
     return await service.get_all(pagination=pagination)
 
@@ -44,7 +44,7 @@ async def get_all(
 async def get_by_id(
     id: int,
     service: DepartmentService = Depends(get_department_service),
-    _: User = Depends(require_permission("read:departments"))
+    # _: User = Depends(require_permission("read:departments"))
 ):
     return await service.get_by_id(id=id)
 
@@ -54,7 +54,7 @@ async def update(
     id: int,
     update_data: DepartmentUpdate,
     service: DepartmentService = Depends(get_department_service),
-    _: User = Depends(require_permission("update:departments"))
+    # _: User = Depends(require_permission("update:departments"))
 ):
     return await service.update(id=id, update_data=update_data)
 
@@ -63,7 +63,7 @@ async def update(
 async def delete(
     id: int,
     service: DepartmentService = Depends(get_department_service),
-    _: User = Depends(require_permission("delete:departments"))
+    # _: User = Depends(require_permission("delete:departments"))
 ):
     await service.delete(id=id)
     return {"message": "Department deleted successfully"}

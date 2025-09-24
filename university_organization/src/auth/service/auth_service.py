@@ -62,11 +62,10 @@ class AuthService:
         credentials_with_hash = UserCredentials(
             username=credentials.username,
             password=hashed_password,
-            role_id=credentials.role_id,
         )
 
         await BasicService(session=self.session).create(
-            model=User, obj_items=credentials_with_hash
+            model=User, create_data=credentials_with_hash
         )
         return {"message": "Registration successful"}
 

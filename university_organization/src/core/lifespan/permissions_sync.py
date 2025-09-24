@@ -96,7 +96,7 @@ async def seed_roles(session: AsyncSession):
     existing_admin = await session.execute(
         select(User).where(User.username == settings.admin.username)
     )
-    existing_admin = existing_admin.scalar_one_or_none()
+    existing_admin = existing_admin.scalars().first()
 
     if not existing_admin:
         admin_user = User(
