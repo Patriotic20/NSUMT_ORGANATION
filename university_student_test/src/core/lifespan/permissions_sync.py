@@ -35,7 +35,7 @@ async def sync_permissions(app: FastAPI):
     async with httpx.AsyncClient() as client:
 
         login_resp = await client.post(
-            "http://127.0.0.1:8000/auth/login",
+            settings.organization_urls.login,
             params={
                 "username": settings.admin.username, 
                 "password": settings.admin.password,
@@ -48,7 +48,7 @@ async def sync_permissions(app: FastAPI):
         generated = generate_permissions(app)
 
         resp = await client.post(
-            "http://127.0.0.1:8000/permissions/sync",
+            settings.organization_urls.permissions,
             json=generated,
             headers={"Authorization": f"Bearer {token}"},
         )

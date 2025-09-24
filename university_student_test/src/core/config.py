@@ -62,6 +62,12 @@ class RabbitMqSettings(BaseModel):
     
     url: str
     queue_name: str
+    
+    
+class OrganizationUrls(BaseModel):
+    login: str
+    permissions: str
+    
 
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -79,6 +85,7 @@ class AppSettings(BaseSettings):
     file_url: FileUrl
     admin: AdminData
     rabbit: RabbitMqSettings
+    organization_urls: OrganizationUrls 
     
     
     
