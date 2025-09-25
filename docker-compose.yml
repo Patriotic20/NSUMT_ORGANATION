@@ -43,7 +43,7 @@ services:
       dockerfile: Dockerfile
 
     ports:
-      - "8000:8010"
+      - "8010:8010"
     env_file:
       - ./university_student_test/.env
     environment:
