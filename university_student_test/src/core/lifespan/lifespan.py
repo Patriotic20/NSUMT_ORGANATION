@@ -15,7 +15,7 @@ async def lifespan(app: FastAPI):
         os.makedirs(UPLOAD_DIR)
         print(f"Created main folder: {UPLOAD_DIR}")
     
-    # await sync_permissions(app)6
+    await sync_permissions(app)
 
     yield
 
