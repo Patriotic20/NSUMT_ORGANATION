@@ -23,7 +23,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
-        "https://test.api.nsumt.uz"
+        "https://organization.api.nsumt.uz",
+        "http://organization.api.nsumt.uz"
     ],
     allow_credentials=True,
     allow_methods=["*"],
