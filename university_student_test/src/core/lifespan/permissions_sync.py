@@ -46,6 +46,7 @@ async def sync_permissions(app: FastAPI):
                 settings.organization_urls.permissions,
                 json=generated,
                 timeout=10.0,  
+                follow_redirects=True,
                 headers={"Accept": "application/json"},
             )
         except httpx.RequestError as e:
