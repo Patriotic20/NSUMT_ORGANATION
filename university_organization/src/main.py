@@ -24,7 +24,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "https://organization.api.nsumt.uz",
-        "http://organization.api.nsumt.uz"
+        "http://organization.api.nsumt.uz",
+        "https://organazation.nsumt.uz"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -34,7 +35,7 @@ app.add_middleware(
 if __name__ == "__main__":
     uvicorn.run(                    
         "main:app", 
-        # host=settings.server.host, 
+        host=settings.server.host, 
         port=settings.server.port, 
         reload=True
         )
