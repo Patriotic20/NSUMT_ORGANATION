@@ -34,23 +34,11 @@ def generate_permissions(app: FastAPI):
 async def sync_permissions(app: FastAPI):
     async with httpx.AsyncClient() as client:
 
-        login_resp = await client.post(
-            settings.organization_urls.login,
-            params={
-                "username": settings.admin.username, 
-                "password": settings.admin.password,
-                },  
-        )
-        login_data = login_resp.json()
-        token = login_data.get("access_token")
-
-        # 2. Generate permissions
         generated = generate_permissions(app)
 
         resp = await client.post(
             settings.organization_urls.permissions,
             json=generated,
-            headers={"Authorization": f"Bearer {token}"},
         )
 
         return resp.status_code, resp.json()

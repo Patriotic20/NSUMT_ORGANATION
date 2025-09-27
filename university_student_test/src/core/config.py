@@ -28,11 +28,6 @@ class ServerConfig(BaseModel):
     port: int = 8010
     is_reload: bool = True
     
-    
-
-class AdminData(BaseModel):
-    username: str
-    password: str
 
 class JwtConfig(BaseModel):
     access_secret_key: str 
@@ -65,7 +60,6 @@ class RabbitMqSettings(BaseModel):
     
     
 class OrganizationUrls(BaseModel):
-    login: str
     permissions: str
     
 
@@ -83,7 +77,6 @@ class AppSettings(BaseSettings):
     db: DatabaseConfig
     jwt: JwtConfig
     file_url: FileUrl
-    admin: AdminData
     rabbit: RabbitMqSettings
     organization_urls: OrganizationUrls 
     
