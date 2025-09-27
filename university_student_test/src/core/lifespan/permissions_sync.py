@@ -2,9 +2,15 @@ from fastapi.routing import APIRoute
 from fastapi import FastAPI
 
 from core.config import settings
+from core.config import LOG_DEFAULT_FORMAT
 
 import httpx
+import logging
 
+logging.basicConfig(
+    level=logging.INFO,
+    format=LOG_DEFAULT_FORMAT
+)
 
 def http_to_action(method: str) -> str:
     mapping = {
@@ -33,12 +39,26 @@ def generate_permissions(app: FastAPI):
 
 async def sync_permissions(app: FastAPI):
     async with httpx.AsyncClient() as client:
-
         generated = generate_permissions(app)
 
-        resp = await client.post(
-            settings.organization_urls.permissions,
-            json=generated,
-        )
+        try:
+            resp = await client.post(
+                settings.organization_urls.permissions,
+                json=generated,
+                timeout=10.0,  
+                headers={"Accept": "application/json"},
+            )
+        except httpx.RequestError as e:
+            logging.error(f"❌ Failed to reach permissions service: {e}")
+            return None, None
 
-        return resp.status_code, resp.json()
+        try:
+            data = resp.json()
+        except ValueError:
+            logging.error(
+                f"❌ Invalid JSON from permissions service "
+                f"(status {resp.status_code}): {resp.text}"
+            )
+            data = None
+
+        return resp.status_code, data
