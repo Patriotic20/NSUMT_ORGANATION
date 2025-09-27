@@ -64,10 +64,10 @@ class AuthService:
             password=hashed_password,
         )
 
-        await BasicService(session=self.session).create(
+        user_data = await BasicService(session=self.session).create(
             model=User, create_data=credentials_with_hash
         )
-        return {"message": "Registration successful"}
+        return user_data
 
     @handle_jwt_exceptions
     async def refresh(self, refresh_token: str):

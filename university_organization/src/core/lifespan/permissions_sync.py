@@ -10,6 +10,8 @@ from core.models.role import Role
 from core.models.role_permission_association import RolePermission
 from core.models.user_role_association import UserRole
 from core.config import settings
+from auth.service.auth_service import AuthService
+from auth.schemas.auth import UserCredentials
 
 def http_to_action(method: str) -> str:
     mapping = {
@@ -97,16 +99,16 @@ async def seed_roles(session: AsyncSession):
         select(User).where(User.username == settings.admin.username)
     )
     existing_admin = existing_admin.scalars().first()
+    
+    userCredentials = UserCredentials(
+        username=settings.admin.username,
+        password=settings.admin.password
+    )
+    
 
     if not existing_admin:
-        admin_user = User(
-            username=settings.admin.username,
-            password=settings.admin.password  
-        )
-        session.add(admin_user)
-        await session.commit()
-        await session.refresh(admin_user) 
-        
+        admin_user : User = await AuthService(session=session).register(credentials=userCredentials)
+    
         
         user_role = UserRole(
             user_id=admin_user.id,
