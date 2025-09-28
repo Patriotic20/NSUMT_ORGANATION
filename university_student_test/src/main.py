@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from core.config import settings
 from fastapi.staticfiles import StaticFiles
-
+from fastapi.middleware.cors import CORSMiddleware
 
 from router import router as api_router
 from core.lifespan.lifespan import lifespan
@@ -18,6 +18,21 @@ app.mount("/uploads" , StaticFiles(directory="uploads") , name="uploads")
 
 app.include_router(api_router)
 
+
+origins = [
+    "http://organization.nsumt.uz",
+    "https://organization.nsumt.uz"
+    "http://test.nsumt.uz"
+    "https://test.nsumt.uz",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     uvicorn.run(

@@ -1,9 +1,12 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+
 
 from router import router as api_router
 from core.config import settings
 from core.lifespan.lifespan import lifespan
+
 
 
 
@@ -17,6 +20,21 @@ app = FastAPI(
 )
 
 app.include_router(api_router)
+
+
+origins = [
+    "http://organization.nsumt.uz",
+    "https://organization.nsumt.uz"
+    
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 
