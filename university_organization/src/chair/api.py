@@ -29,7 +29,7 @@ async def create(
     service: ChairService = Depends(get_chair_service),
     _: User = Depends(require_permission("create:chairs"))
     ):
-    return await service.create(chair_data=create_data)
+    return await service.create(create_data=create_data)
      
 
 
