@@ -106,18 +106,18 @@ services:
     networks:
       - university_network
 
-  # gateway:
-  #   image: nginx:alpine
-  #   ports:
-  #     - "80:80"
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf
-  #   depends_on:
-  #     - university_auth
-  #     - university_organization
-  #     - university_student_test
-  #   networks:
-  #     - university_network
+  gateway:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - university_auth
+      - university_organization
+      - university_student_test
+    networks:
+      - university_network
 
 volumes:
   shared_db_data:
