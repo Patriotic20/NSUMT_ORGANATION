@@ -1,6 +1,5 @@
 from fastapi import FastAPI
 import uvicorn
-from fastapi.middleware.cors import CORSMiddleware
 
 from router import router as api_router
 from core.config import settings
@@ -19,18 +18,7 @@ app = FastAPI(
 
 app.include_router(api_router)
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "https://organazation.nsumt.uz",
-        "https://test.nsumt.uz"
-        "http://localhost:5174"
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 
 if __name__ == "__main__":
     uvicorn.run(                    
