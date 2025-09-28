@@ -1,6 +1,6 @@
 from .base import Base
 from .mixins.int_pr_ky import IntIdPkMixin
-from sqlalchemy.orm import Mapped 
+from sqlalchemy.orm import Mapped , mapped_column
 from sqlalchemy.orm import relationship
 
 
@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class Subject(Base , IntIdPkMixin):
     
-    teacher_id: Mapped[int]
+    teacher_id: Mapped[int| None] =  mapped_column(nullable=True)
     name: Mapped[str]
     
     

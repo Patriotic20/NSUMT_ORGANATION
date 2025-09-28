@@ -20,6 +20,7 @@ app.include_router(api_router)
 
 
 origins = [
+    "http://localhost:5174",
     "http://organization.nsumt.uz",
     "https://organization.nsumt.uz"
     "http://test.nsumt.uz"
