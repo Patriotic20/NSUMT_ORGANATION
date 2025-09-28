@@ -37,6 +37,13 @@ services:
       rabbitmq:
         condition: service_healthy
 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
   university_student_test:
     build:
       context: ./university_student_test
@@ -52,6 +59,8 @@ services:
     networks:
       - university_network
     depends_on:
+      university_organization:
+        condition: service_healthy
       shared_db:
         condition: service_healthy
       rabbitmq:
