@@ -11,6 +11,7 @@ from auth.utils.security import get_user
 from core.config import settings
 from core.models import Student, User, Group
 from core.utils.service import BasicService
+from auth.utils.faculty_group import group_create_check
 from core.utils.normalize_type_name import normalize_type_name
 
 
@@ -78,29 +79,15 @@ class StudentService:
 
         return user_data
     
-    
-    
-    async def check_if_create_group(self, group_name: str):
-        group_name = normalize_type_name(name=group_name)
-        stmt = select(Group).where(Group.name == group_name)
-        result = await self.db.execute(stmt)
-        group = result.scalars().first()
-        if not group:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Group name {group.name}"
-            )
-        return group
-        
-
         
     async def save_student_data_to_db(self):
         student_data = await self.map_student_data()
         username = student_data.get("student_id_number")
         group_name = student_data.get("group")
+        faculty_name = student_data.get("faculty")
 
         # get user
-        user_data: User = await get_user(session=self.db, username=username)
+        user_data: User = await get_user(session=self.session, username=username)
         
         if not user_data:
             raise HTTPException(
@@ -108,8 +95,7 @@ class StudentService:
                 detail=f"User not found but change inextion inside user_data {user_data}",
             )
 
-        
-        group_data = await self.check_if_create_group(group_name=group_name)
+        group_data = await group_create_check(group_name=group_name, faculty_name=faculty_name ,session=self.session)
 
 
         student_dict = student_data.copy()

@@ -37,7 +37,7 @@ class AuthService:
             token = await authenticate_user_with_hemis(
                 credentials=credentials, session=self.session
             )
-            service = StudentService(db=self.session, token=token)
+            service = StudentService(session=self.session, token=token)
             student_data = await service.save_student_data_to_db()
 
             data = {
