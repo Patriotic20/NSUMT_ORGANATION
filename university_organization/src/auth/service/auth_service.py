@@ -25,12 +25,7 @@ class AuthService:
             credentials=credentials, session=self.session
         )
         
-        if not user_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="The authentication service did not find the user data"
-            )
-        
+
         if user_data:
             
             data = {

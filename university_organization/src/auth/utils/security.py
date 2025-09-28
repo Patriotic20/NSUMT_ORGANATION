@@ -40,11 +40,6 @@ async def get_user(session: AsyncSession, username: str):
     result = await session.execute(stmt)
     user_data = result.scalars().first()
     
-    if not user_data:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
     return user_data
 
 
