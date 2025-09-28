@@ -3,8 +3,8 @@ from fastapi import HTTPException, status
 
 
 class LoginRequest(BaseModel):
-    username: str = Field(..., min_length=3, max_length=50)
-    password: str = Field(..., min_length=3, max_length=128)
+    username: str 
+    password: str 
 
 
 class RefreshToken(BaseModel):

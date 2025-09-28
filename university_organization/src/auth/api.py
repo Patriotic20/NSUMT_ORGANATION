@@ -29,7 +29,7 @@ async def register(
 
 @router.post("/login")
 async def login(
-    login_data: LoginRequest = Depends(),
+    login_data: LoginRequest,
     service: AuthService = Depends(get_auth_service)
 ):
     return await service.login(credentials=login_data)
