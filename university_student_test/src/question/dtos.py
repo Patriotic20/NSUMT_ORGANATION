@@ -6,16 +6,16 @@ class QuestionEnterDto:
     def __init__(
         self,
         subject_id: int = Form(...),
-        text: str = Form(...),
-        image: UploadFile | None = File(None),
-        option_a: str = Form(...),
-        option_a_image: UploadFile | None = File(None),
-        option_b: str = Form(...),
-        option_b_image: UploadFile | None = File(None),
-        option_c: str = Form(...),
-        option_c_image: UploadFile | None = File(None),
-        option_d: str = Form(...),
-        option_d_image: UploadFile | None = File(None),
+        text: str = Form(None),
+        image: UploadFile = File(None),
+        option_a: str = Form(None),
+        option_a_image: UploadFile = File(None),
+        option_b: str = Form(None),
+        option_b_image: UploadFile = File(None),
+        option_c: str = Form(None),
+        option_c_image: UploadFile = File(None),
+        option_d: str = Form(None),
+        option_d_image: UploadFile = File(None),
     ):
         self.text = text
         

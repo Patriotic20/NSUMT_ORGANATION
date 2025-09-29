@@ -2,7 +2,7 @@ from fastapi import APIRouter , Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .service import SubjectService
-from .schemas import SubjectBase , SubjectUpdate
+from .schemas import SubjectUpdate, SubjectCreate
 
 from core.database.db_helper import db_helper
 
@@ -20,7 +20,7 @@ def get_subject_service(session: AsyncSession = Depends(db_helper.session_getter
 
 @router.post("/create")
 async def create(
-    subject_data: SubjectBase,
+    subject_data: SubjectCreate,
     service: SubjectService = Depends(get_subject_service),
     current_user: TokenPaylod = Depends(require_permission("create:subjects"))
 ):

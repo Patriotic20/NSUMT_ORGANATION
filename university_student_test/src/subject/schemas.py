@@ -5,7 +5,7 @@ class SubjectBase(BaseModel):
 
 class SubjectCreate(SubjectBase):
     
-    teacher_id: int
+    teacher_id: int | None = None
     
 
 
@@ -14,4 +14,5 @@ class SubjectResponse(SubjectBase):
     
     
 class SubjectUpdate(BaseModel):
+    teacher_id: int | None = None
     name: str | None = None

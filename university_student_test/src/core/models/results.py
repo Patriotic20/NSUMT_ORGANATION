@@ -1,8 +1,7 @@
 from .base import Base
 from .mixins.int_pr_ky import IntIdPkMixin
 from sqlalchemy.orm import Mapped , mapped_column , relationship
-from sqlalchemy import ForeignKey , DateTime , Integer , Float
-from datetime import datetime
+from sqlalchemy import ForeignKey , Integer , Float
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
