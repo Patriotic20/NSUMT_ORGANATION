@@ -19,4 +19,5 @@ COPY auth ./auth
 WORKDIR /app/auth
 
 # Run your FastStream service
-CMD ["python", "app.py"]
+CMD ["bash", "-c", "sleep 10 && python app.py"]
+
