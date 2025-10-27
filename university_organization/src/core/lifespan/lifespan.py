@@ -18,8 +18,8 @@ async def lifespan(app: FastAPI):
     
     logging.info("🚀 Lifespan startup...") 
     
-    async with db_helper.session_factory() as session:
-        await sync_permissions(app, session)
+    # async with db_helper.session_factory() as session:
+    #     await sync_permissions(app, session)
 
     yield
     
