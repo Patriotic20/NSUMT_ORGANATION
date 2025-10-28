@@ -14,6 +14,7 @@ from core.utils.database import db_helper
 from core.models.user import User
 from core.schemas.get_all import GetAll
 from auth.utils.dependencies import require_permission
+from auth.schemas.auth import TokenPaylod
 
 router = APIRouter(
     tags=["Teacher"],
@@ -27,13 +28,13 @@ def get_teacher_service(session : AsyncSession = Depends(db_helper.session_gette
 async def create(
     teacher_data: TeacherBase,
     service: TeacherService = Depends(get_teacher_service),
-    current_user : User = Depends(require_permission("create:teachers"))
-    ):
+    current_user: TokenPaylod = Depends(require_permission("create:teachers"))
+):
     teacher_data = TeacherCreate(
-        user_id=current_user.id,
+        user_id=current_user.user_id,  
         **teacher_data.model_dump()
     )
-    
+
     return await service.create(create_data=teacher_data)
     
 
