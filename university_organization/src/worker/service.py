@@ -16,6 +16,7 @@ class WorkerService:
             model=Worker,
             create_data=create_data,
             filters=[
+                Worker.user_id == create_data.user_id,
                 Worker.first_name == create_data.first_name,
                 Worker.last_name == create_data.last_name,
                 Worker.patronymic == create_data.patronymic,

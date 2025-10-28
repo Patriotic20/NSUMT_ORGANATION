@@ -21,6 +21,7 @@ class TeacherService:
             model=Teacher, 
             create_data=create_data,
             filters=[
+                Teacher.user_id == create_data.user_id,
                 Teacher.first_name == create_data.first_name,
                 Teacher.last_name == create_data.last_name,
                 Teacher.patronymic == create_data.patronymic
