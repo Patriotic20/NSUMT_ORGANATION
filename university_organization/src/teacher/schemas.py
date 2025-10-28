@@ -9,15 +9,15 @@ class TeacherBase(BaseModel):
     patronymic: str
 
     # Normalize name fields before validation
-    @field_validator(
-        "first_name",
-        "last_name",
-        "patronymic",
-        mode="before"
-    )
-    @classmethod
-    def normalizing(cls, value: str) -> str:
-        return normalize_type_name(value)
+    # @field_validator(
+    #     "first_name",
+    #     "last_name",
+    #     "patronymic",
+    #     mode="before"
+    # )
+    # @classmethod
+    # def normalizing(cls, value: str) -> str:
+    #     return normalize_type_name(value)
 
 
 class TeacherCreate(TeacherBase):
@@ -29,13 +29,13 @@ class TeacherUpdate(BaseModel):
     last_name: str | None = None
     patronymic: str | None = None
 
-    @field_validator("*", mode="before")
-    @classmethod
-    def normalizing(cls, value: str) -> str:
-        # Skip None values
-        if value is None:
-            return value
-        return normalize_type_name(value)
+    # @field_validator("*", mode="before")
+    # @classmethod
+    # def normalizing(cls, value: str) -> str:
+    #     # Skip None values
+    #     if value is None:
+    #         return value
+    #     return normalize_type_name(value)
 
 
 class TeacherResponse(TeacherCreate):
