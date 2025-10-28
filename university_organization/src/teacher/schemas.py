@@ -8,7 +8,11 @@ class TeacherBase(BaseModel):
     last_name: str
     patronymic: str
     
-    @field_validator("*", mode="before")
+    @field_validator(
+        "first_name", 
+        "last_name", 
+        "patronymic",
+        mode="before",)
     @classmethod
     def normalizing(cls, value: str) -> str:
         if isinstance(str, value):
