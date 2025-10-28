@@ -13,6 +13,7 @@ from .service import WorkerService , WorkerGet
 from core.models.user import User
 from core.schemas.get_all import GetAll
 from auth.utils.dependencies import require_permission
+from auth.schemas.auth import TokenPaylod
 
 router = APIRouter(
     tags=["Workers"],
@@ -27,10 +28,10 @@ def get_worker_service(session: AsyncSession = Depends(db_helper.session_getter)
 async def create(
     create_data: WorkerBase, 
     service: WorkerService = Depends(get_worker_service),
-    current_user: User = Depends(require_permission("create:workers"))
+    current_user: TokenPaylod = Depends(require_permission("create:workers"))
     ):
     create_data = WorkerCreate(
-        user_id=current_user.id,
+        user_id=current_user.user_id,
         **create_data.model_dump()
     )
     return await service.create(create_data=create_data)
