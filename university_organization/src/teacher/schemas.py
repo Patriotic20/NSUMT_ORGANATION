@@ -15,9 +15,7 @@ class TeacherBase(BaseModel):
         mode="before",)
     @classmethod
     def normalizing(cls, value: str) -> str:
-        if isinstance(str, value):
-            return normalize_type_name(value)
-        return value
+        return normalize_type_name(value)
 
 
 class TeacherCreate(TeacherBase):
@@ -35,9 +33,8 @@ class TeacherUpdate(BaseModel):
     @field_validator("*", mode="before")
     @classmethod
     def normalizing(cls, value: str) -> str:
-        if isinstance(str, value):
-            return normalize_type_name(value)
-        return value
+        return normalize_type_name(value)
+
     
 class TeacherResponse(TeacherCreate):
     
