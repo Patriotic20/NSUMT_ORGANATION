@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from core.config import settings
 from fastapi.staticfiles import StaticFiles
-import os
+from pathlib import Path
 
 
 from router import router as api_router
@@ -15,9 +15,11 @@ app = FastAPI(
     description="NSMUT Test - Talabalar uchun onlayn test tizimi. Ushbu platforma orqali talabalar turli fanlardan test topshirib, o‘z bilimlarini sinab ko‘rishlari mumkin."
     )
 
+BASE_DIR = Path(__file__).resolve().parent
+UPLOAD_DIR = BASE_DIR / "uploads"
+UPLOAD_DIR.mkdir(exist_ok=True)
 
-os.makedirs("uploads", exist_ok=True)
-app.mount("/uploads" , StaticFiles(directory="src/uploads") , name="uploads")
+app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
 
 app.include_router(api_router)
 
