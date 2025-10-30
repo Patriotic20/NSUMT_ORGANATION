@@ -3,7 +3,6 @@ from core.utils.basic_service import BasicService
 from .schemas import QuestionCreate, QuestionUpdate
 from sqlalchemy import select, insert, and_
 from openpyxl import load_workbook
-from core.models.subjects import Subject
 from core.models.questions import Question
 from fastapi import HTTPException, status, UploadFile
 import tempfile
@@ -14,32 +13,10 @@ class QuestionService:
         self.session = session
         self.service = BasicService(db=session)
 
-    async def create_question(self, question_data: QuestionCreate , teacher_id: int ):
-        
-        filters = [Subject.id == question_data.subject_id, Subject.teacher_id == teacher_id]
-        
-        subject_data = await self.service.get(model=Subject, filters=filters, limit=1)
-        
-        if not subject_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Subject not found"
-            )
-        schema = QuestionCreate(**question_data.__dict__)
-        return await self.service.create(model=Question, obj_items=schema)
+    async def create_question(self, question_data: QuestionCreate):
+        return await self.service.create(model=Question, obj_items=question_data)
 
-    async def create_question_by_exel(self, subject_id: int, teacher_id: int ,file: UploadFile):
-        
-        filters = [Subject.id == subject_id, Subject.teacher_id == teacher_id]
-        
-        subject_data = await self.service.get(model=Subject, filters=filters, limit=1)
-        
-        if not subject_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Subject not found"
-            )
-        
+    async def create_question_by_exel(self, subject_id: int, file: UploadFile):
         # Validate file extension
         if not (file.filename.endswith(".xlsx") or file.filename.endswith(".xls")):
             raise HTTPException(
@@ -81,10 +58,9 @@ class QuestionService:
 
         return {"status": "success", "message": f"{len(values)} questions uploaded successfully"}
 
-    async def get_question_by_id(self, question_id: int, teacher_id: int | None = None):
+    async def get_question_by_id(self, question_id: int):
         question = await self.check_by_teacher_id(
             filters=[Question.id == question_id],
-            teacher_id=teacher_id,
             is_all=False
         )
         if not question:
@@ -123,8 +99,7 @@ class QuestionService:
         }
         
     async def check_by_teacher_id(
-        self, 
-        teacher_id: int, 
+        self,  
         limit: int | None = None,
         offset: int | None = 0,
         is_all: bool = False,
@@ -134,14 +109,6 @@ class QuestionService:
         if filters is None:
             filters = []
             
-        # Always filter by teacher_id
-        filters.append(Subject.teacher_id == teacher_id)
-
-        stmt = (
-            select(Question)
-            .join(Subject, Subject.id == Question.subject_id)
-            .where(and_(*filters))
-        )
 
         # Apply pagination
         if limit is not None:
