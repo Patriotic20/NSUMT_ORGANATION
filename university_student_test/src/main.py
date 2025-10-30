@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from core.config import settings
 from fastapi.staticfiles import StaticFiles
+import os
 
 
 from router import router as api_router
@@ -14,6 +15,8 @@ app = FastAPI(
     description="NSMUT Test - Talabalar uchun onlayn test tizimi. Ushbu platforma orqali talabalar turli fanlardan test topshirib, o‘z bilimlarini sinab ko‘rishlari mumkin."
     )
 
+
+os.makedirs("uploads", exist_ok=True)
 app.mount("/uploads" , StaticFiles(directory="src/uploads") , name="uploads")
 
 app.include_router(api_router)
