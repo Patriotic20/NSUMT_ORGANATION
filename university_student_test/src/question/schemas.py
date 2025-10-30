@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 class QuestionBase(BaseModel):
     text: str
-    image: str | None = None
     option_a: str | None = None
     option_b: str | None = None
     option_c: str | None = None
@@ -22,7 +21,6 @@ class QuestionResponse(QuestionCreate):
 
 class QuestionUpdate(BaseModel):
     text: str | None = None
-    image: str | None = None
     option_a: str | None = None
     option_b: str | None = None
     option_c: str | None = None

@@ -1,4 +1,4 @@
-from fastapi import APIRouter , Depends
+from fastapi import APIRouter , Depends, UploadFile , File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .service import QuizService 
@@ -8,6 +8,7 @@ from core.database.db_helper import db_helper
 from auth.schemas.auth import TokenPaylod
 
 from auth.utils.security import require_permission
+from core.utils.save_file import save_file
 
 
 router = APIRouter(
@@ -29,6 +30,13 @@ async def create(
 ):
     return await service.create_quiz(quiz_data=quiz_data, teacher_id=current_user.user_id,)
 
+
+@router.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    return save_file(file=file)
+        
+    
+    
 
 @router.get("/get/{quiz_id}" , response_model=QuizResponse)
 async def get_by_id(

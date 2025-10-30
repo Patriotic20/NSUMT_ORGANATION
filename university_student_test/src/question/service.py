@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.utils.basic_service import BasicService
 from .schemas import QuestionCreate, QuestionUpdate
-from sqlalchemy import select, insert, and_
+from sqlalchemy import insert
 from openpyxl import load_workbook
 from core.models.questions import Question
 from fastapi import HTTPException, status, UploadFile
@@ -58,24 +58,13 @@ class QuestionService:
 
         return {"status": "success", "message": f"{len(values)} questions uploaded successfully"}
 
-    async def get_question_by_id(self, question_id: int):
-        question = await self.check_by_teacher_id(
-            filters=[Question.id == question_id],
-            is_all=False
-        )
-        if not question:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Question not found"
-            )
-        return question
 
-    async def get_all_question(self, limit: int = 20, offset: int = 0, teacher_id: int | None = None):
+
+    async def get_all_question(self, limit: int = 20, offset: int = 0):
         questions = await self.check_by_teacher_id(
             limit=limit, 
             offset=offset, 
             is_all=True, 
-            teacher_id=teacher_id
         )
         if not questions:
             raise HTTPException(
@@ -84,16 +73,18 @@ class QuestionService:
             )
         return questions
 
-    async def update_question(self, question_id: int, question_data: QuestionUpdate , teacher_id: int | None = None):
-        await self.get_question_by_id(question_id=question_id, teacher_id=teacher_id)
-        schema = QuestionUpdate(**question_data.__dict__)
-        filters = [Question.id == question_id]
-        return await self.service.update(model=Question, filters=filters, update_data=schema)
+    async def update_question(self, question_id: int, question_data: QuestionUpdate):
+        return await self.service.update(
+            model=Question, 
+            filters=[Question.id == question_id], 
+            update_data=question_data
+            )
 
-    async def delete_question(self, question_id: int, teacher_id: int | None = None):
-        await self.get_question_by_id(question_id=question_id, teacher_id=teacher_id)
-        filters = [Question.id == question_id]
-        await self.service.delete(model=Question, filters=filters)
+    async def delete_question(self, question_id: int): 
+        await self.service.delete(
+            model=Question, 
+            filters=[Question.id == question_id]
+            )
         return {
             "message" : "Delete successfully"
         }

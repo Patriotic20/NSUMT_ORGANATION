@@ -1,11 +1,15 @@
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import UploadFile
 from sqlalchemy import select, and_
 from fastapi import HTTPException, status
+from pathlib import Path
+import uuid
 
 
 from .schemas import QuizBase, QuizUpdate
 from core.utils.basic_service import BasicService
 from core.models import Quiz
+from core.config import settings
 
 
 class QuizService:
@@ -21,6 +25,7 @@ class QuizService:
             quiz_id=quiz_id, 
             raise_not_found=True
         )
+        
 
     async def get_all_quiz(
         self,
