@@ -5,7 +5,7 @@ from fastapi import HTTPException, status
 
 from .schemas import QuizBase, QuizUpdate
 from core.utils.basic_service import BasicService
-from core.models import Quiz, Subject
+from core.models import Quiz
 
 
 class QuizService:

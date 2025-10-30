@@ -28,7 +28,7 @@ async def get_test(
     quiz_id: int,
     quiz_pin: str,
     service: QuizProcessService = Depends(get_quiz_process_service),
-    current_user: TokenPaylod = Depends(require_permission("read:quiz_process"))
+    _ : TokenPaylod = Depends(require_permission("read:quiz_process"))
 ):
     return await service.create_questions(quiz_id=quiz_id, quiz_pin=quiz_pin)
 
