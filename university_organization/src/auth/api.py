@@ -24,8 +24,8 @@ async def register(
     register_data: UserCredentials,
     service: AuthService = Depends(get_auth_service)
 ):
-    await service.register(credentials=register_data)
-    return {"message": "Register successfully"}
+    user_data = await service.register(credentials=register_data)
+    return {"id": user_data.id}
 
 @router.post("/login")
 async def login(

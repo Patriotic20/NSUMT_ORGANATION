@@ -10,7 +10,7 @@ from .schemas import SubjectUpdate, SubjectBase , AssignTeacher
 class SubjectService:
     def __init__(self, session: AsyncSession):
         self.session = session
-        self.service = BasicService(db=self.session)
+        self.service = BasicService(session=self.session)
 
     async def create_subject(self, subject_data: SubjectBase):
         return await self.service.create(
