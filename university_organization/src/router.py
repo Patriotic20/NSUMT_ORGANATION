@@ -13,12 +13,16 @@ from group.api import router as group_router
 from teacher.api import router as teacher_router
 from student.api import router as student_router
 
+from subject.api import router as subject_router
+
 
 from role.api import router as role_router
 
 from permission.api import router as perm_router
 
 router = APIRouter()
+
+router.include_router(subject_router)
 
 router.include_router(auth_router)
 router.include_router(user_router)
