@@ -26,12 +26,13 @@ def get_teacher_service(session : AsyncSession = Depends(db_helper.session_gette
 
 @router.post("/create", response_model=TeacherResponse)
 async def create(
+    user_id: int,
     teacher_data: TeacherBase,
     service: TeacherService = Depends(get_teacher_service),
-    current_user: TokenPaylod = Depends(require_permission("create:teachers"))
+    _ : TokenPaylod = Depends(require_permission("create:teachers"))
 ):
     teacher_data = TeacherCreate(
-        user_id=current_user.user_id,  
+        user_id = user_id,  
         **teacher_data.model_dump()
     )
 

@@ -26,12 +26,13 @@ def get_worker_service(session: AsyncSession = Depends(db_helper.session_getter)
 
 @router.post("/create")
 async def create(
+    user_id: int,
     create_data: WorkerBase, 
     service: WorkerService = Depends(get_worker_service),
-    current_user: TokenPaylod = Depends(require_permission("create:workers"))
+    _ : TokenPaylod = Depends(require_permission("create:workers"))
     ):
     create_data = WorkerCreate(
-        user_id=current_user.user_id,
+        user_id = user_id,
         **create_data.model_dump()
     )
     return await service.create(create_data=create_data)

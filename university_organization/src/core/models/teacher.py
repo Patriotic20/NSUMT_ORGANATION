@@ -7,6 +7,9 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .chair import Chair
+    from .subject import Subject
+    from .teacher import Teacher
+    from .group import Group
 
 class Teacher(Base, IntIdPkMixin, UserFkId):
     
@@ -20,4 +23,15 @@ class Teacher(Base, IntIdPkMixin, UserFkId):
     
     chair: Mapped["Chair"] = relationship("Chair" , back_populates="teachers")
     
+    subjects: Mapped[list["Subject"]] = relationship(
+        "Subject",
+        secondary="subject_teachers",
+        back_populates="teachers"
+    )
+    
+    groups: Mapped[list["Group"]] = relationship(
+        "Group",
+        secondary="group_teachers",
+        back_populates="teachers"
+    )
 

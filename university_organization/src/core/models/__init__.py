@@ -1,4 +1,4 @@
-__all__ = (
+__all__ = [
     "Base", 
     "Faculty",
     "Chair",
@@ -12,7 +12,10 @@ __all__ = (
     "Permission",
     "UserRole",
     "RolePermission",
-)
+    "Subject",
+    "GroupTeacher",
+    "SubjectTeacher"
+]
 
 from .base import Base
 from .faculty import Faculty
@@ -32,3 +35,7 @@ from .role import Role
 from .permission import Permission
 from .user_role_association import UserRole
 from .role_permission_association import RolePermission
+
+from .subject import Subject
+from .group_teacher import GroupTeacher
+from .subject_teacher_association import SubjectTeacher
