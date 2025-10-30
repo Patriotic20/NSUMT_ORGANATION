@@ -14,7 +14,7 @@ app = FastAPI(
     description="NSMUT Test - Talabalar uchun onlayn test tizimi. Ushbu platforma orqali talabalar turli fanlardan test topshirib, o‘z bilimlarini sinab ko‘rishlari mumkin."
     )
 
-app.mount("/uploads" , StaticFiles(directory="uploads") , name="uploads")
+app.mount("/uploads" , StaticFiles(directory="app/uploads") , name="uploads")
 
 app.include_router(api_router)
 
