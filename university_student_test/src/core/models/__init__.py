@@ -2,8 +2,7 @@ __all__ = (
     "Base",
     "Question",
     "Result",
-    "Quiz"
-    
+    "Quiz",
 )
 
 from .base import Base

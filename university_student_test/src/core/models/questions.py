@@ -1,12 +1,9 @@
-from sqlalchemy.orm import mapped_column, Mapped, relationship
+from sqlalchemy.orm import mapped_column
+from sqlalchemy.orm import Mapped
 import random
-from typing import TYPE_CHECKING
 
 from .base import Base
 from .mixins.int_pr_ky import IntIdPkMixin
-
-if TYPE_CHECKING:
-    from .quiz import Quiz
 
 
 class Question(Base, IntIdPkMixin):
@@ -21,20 +18,8 @@ class Question(Base, IntIdPkMixin):
     option_d: Mapped[str] = mapped_column(nullable=False)
 
     
-    question_quizzes: Mapped[list["QuestionQuiz"]] = relationship(
-        "QuestionQuiz",
-        back_populates="question",
-        cascade="all, delete-orphan",
-    )
 
-    # Shortcut relationship to access all quizzes
-    quizzes: Mapped[list["Quiz"]] = relationship(
-        "Quiz",
-        secondary="question_quizzes",
-        back_populates="questions",
-        viewonly=True,
-    )
-
+    
     def to_dict(self, randomize_options: bool = True):
         """
         Convert question to dict.

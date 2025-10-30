@@ -1,23 +1,16 @@
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import ForeignKey, String, Integer, Enum, Table, Column
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import relationship
+from sqlalchemy import String, Integer, Enum
 from datetime import datetime
 from typing import TYPE_CHECKING
 import enum
 
+if TYPE_CHECKING:
+    from .results import Result
+
 from .base import Base
 from .mixins.int_pr_ky import IntIdPkMixin
 
-if TYPE_CHECKING:
-    from .results import Result
-    from .questions import Question
-
-
-quiz_questions = Table(
-    "quiz_questions",
-    Base.metadata,
-    Column("quiz_id", ForeignKey("quizzes.id", ondelete="CASCADE"), primary_key=True),
-    Column("question_id", ForeignKey("questions.id", ondelete="CASCADE"), primary_key=True),
-)
 
 
 class QuizStatus(enum.Enum):
@@ -28,9 +21,10 @@ class QuizStatus(enum.Enum):
 
 class Quiz(Base, IntIdPkMixin):
     __tablename__ = "quizzes"
-
+    
+    subject_id: Mapped[int] = mapped_column(Integer, nullable=False)
     question_number: Mapped[int] = mapped_column(Integer, nullable=False)
-    quiz_time: Mapped[int] = mapped_column(Integer, nullable=False)  # in seconds or minutes
+    quiz_time: Mapped[int] = mapped_column(Integer, nullable=False)  
     start_time: Mapped[datetime] = mapped_column(nullable=False)
     end_time: Mapped[datetime] = mapped_column(nullable=False)
     quiz_pin: Mapped[str] = mapped_column(String, nullable=False, unique=True)
@@ -40,20 +34,8 @@ class Quiz(Base, IntIdPkMixin):
         nullable=False,
         default=QuizStatus.NOT_STARTED,
     )
-
-    # Many-to-many: one quiz can have multiple questions
-    question_quizzes: Mapped[list["QuestionQuiz"]] = relationship(
-        "QuestionQuiz",
-        back_populates="quiz",
-        cascade="all, delete-orphan",
-    )
-
-    questions: Mapped[list["Question"]] = relationship(
-        "Question",
-        secondary="question_quizzes",
-        back_populates="quizzes",
-        viewonly=True,
-    )
+    
+    results: Mapped["Result"] = relationship("Result", back_populates="quiz")
 
     @property
     def current_status(self) -> QuizStatus:
