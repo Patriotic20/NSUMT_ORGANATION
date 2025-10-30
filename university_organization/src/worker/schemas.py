@@ -4,6 +4,7 @@ from core.utils.normalize_type_name import normalize_type_name
 
 class WorkerBase(BaseModel):
     
+    user_id: int
     department_id: int
     first_name: str
     last_name: str

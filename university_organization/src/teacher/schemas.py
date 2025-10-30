@@ -1,8 +1,9 @@
 from pydantic import BaseModel, Field, field_validator
-from core.utils.normalize_type_name import normalize_type_name
+# from core.utils.normalize_type_name import normalize_type_name
 
 
 class TeacherBase(BaseModel):
+    user_id: int
     chair_id: int
     first_name: str
     last_name: str
@@ -20,10 +21,6 @@ class TeacherBase(BaseModel):
     #     return normalize_type_name(value)
 
 
-class TeacherCreate(TeacherBase):
-    user_id: int
-
-
 class TeacherUpdate(BaseModel):
     first_name: str | None = None
     last_name: str | None = None
@@ -38,7 +35,7 @@ class TeacherUpdate(BaseModel):
     #     return normalize_type_name(value)
 
 
-class TeacherResponse(TeacherCreate):
+class TeacherResponse(TeacherBase):
     id: int
 
 

@@ -22,7 +22,6 @@ from permission.api import router as perm_router
 
 router = APIRouter()
 
-router.include_router(subject_router)
 
 router.include_router(auth_router)
 router.include_router(user_router)
@@ -33,6 +32,9 @@ router.include_router(worker_router)
 router.include_router(faculty_router)
 router.include_router(chair_router)
 router.include_router(group_router)
+
+
+router.include_router(subject_router)
 
 router.include_router(teacher_router)
 router.include_router(student_router)

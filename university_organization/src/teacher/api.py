@@ -4,7 +4,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .service import TeacherService
 from .schemas import (
     TeacherBase,
-    TeacherCreate,
     TeacherUpdate,
     TeacherResponse,
     TeacherGet
@@ -26,16 +25,10 @@ def get_teacher_service(session : AsyncSession = Depends(db_helper.session_gette
 
 @router.post("/create", response_model=TeacherResponse)
 async def create(
-    user_id: int,
     teacher_data: TeacherBase,
     service: TeacherService = Depends(get_teacher_service),
     _ : TokenPaylod = Depends(require_permission("create:teachers"))
 ):
-    teacher_data = TeacherCreate(
-        user_id = user_id,  
-        **teacher_data.model_dump()
-    )
-
     return await service.create(create_data=teacher_data)
     
 

@@ -26,15 +26,10 @@ def get_worker_service(session: AsyncSession = Depends(db_helper.session_getter)
 
 @router.post("/create")
 async def create(
-    user_id: int,
     create_data: WorkerBase, 
     service: WorkerService = Depends(get_worker_service),
     _ : TokenPaylod = Depends(require_permission("create:workers"))
-    ):
-    create_data = WorkerCreate(
-        user_id = user_id,
-        **create_data.model_dump()
-    )
+):
     return await service.create(create_data=create_data)
 
 
@@ -52,7 +47,7 @@ async def get_by_id(
     worker_get: WorkerGet = Depends(),
     service: WorkerService = Depends(get_worker_service),
     _: User = Depends(require_permission("read:workers"))
-    ):
+):
     return await service.get_by_id(worker_get=worker_get)
 
 
@@ -62,16 +57,15 @@ async def update(
     worker_get: WorkerGet = Depends(),
     service: WorkerService = Depends(get_worker_service),
     _: User = Depends(require_permission("update:workers"))
-    ):
+):
     return await service.update(worker_get=worker_get, update_data=update_data)
     
 @router.delete("/delete/{id}")
 async def delete(
     worker_get: WorkerGet = Depends(),
     service: WorkerService = Depends(get_worker_service),
-    _: User = Depends(require_permission("delete:workers"))
-    
-    ):
+    _: User = Depends(require_permission("delete:workers"))    
+):
     await service.delete(worker_get=worker_get)
     return {"message": "Worker deleted successfully"}
 
