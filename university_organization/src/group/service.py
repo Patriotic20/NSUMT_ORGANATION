@@ -3,11 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas import (
     GroupCreate,
     GroupUpdate,
-    GroupGet
+    GroupGet,
+    AssignData
 )
 
 from core.utils.service import BasicService
 from core.models.group import Group
+from core.models.group_teacher import GroupTeacher
 from core.schemas.get_all import GetAll
 
 
@@ -22,6 +24,17 @@ class GroupService:
             create_data=create_data,
             filters=[Group.name == create_data.name]
             )
+        
+    async def assign_data(self, assign_data: AssignData):
+        return await self.service.create(
+            model=GroupTeacher,
+            create_data=assign_data,
+            filters=[
+                GroupTeacher.group_id == assign_data.group_id,
+                GroupTeacher.teacher_id == assign_data.teacher_id 
+                ]
+        )
+    
     
     async def get_all(self, pagination: GetAll):
         return await self.service.get(
