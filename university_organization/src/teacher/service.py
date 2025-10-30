@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.utils.service import BasicService
 from .schemas import (
-    TeacherCreate,
+    TeacherBase,
     TeacherUpdate,
     TeacherGet    
 )
@@ -16,7 +16,7 @@ class TeacherService:
         self.session = session
         self.service = BasicService(self.session)
         
-    async def create(self , create_data: TeacherCreate):
+    async def create(self , create_data: TeacherBase):
        return await self.service.create(
             model=Teacher, 
             create_data=create_data,
