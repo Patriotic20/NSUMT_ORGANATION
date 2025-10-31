@@ -36,8 +36,6 @@ class StudentService:
             model=Student,
             filters=[
                 Student.id == student_get.id,
-                Student.user_id == student_get.user_id,
-                Student.group_id == student_get.group_id
             ]
         )
 
