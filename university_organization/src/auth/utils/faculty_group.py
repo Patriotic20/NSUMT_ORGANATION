@@ -5,6 +5,7 @@ from core.models.faculty import Faculty
 from core.models.group import Group
 from faculty.schemas import FacultyCreate
 from group.schemas import GroupCreate
+from sqlalchemy import select
 
 
 async def faculty_create_check(session: AsyncSession, faculty_name: str) -> Faculty:
@@ -13,7 +14,9 @@ async def faculty_create_check(session: AsyncSession, faculty_name: str) -> Facu
     faculty_name = normalize_type_name(value=faculty_name)
     faculty_create = FacultyCreate(name=faculty_name)
     
-    existing_data = await crud.get(model=Faculty, filters=[Faculty.name == faculty_create.name], single=True)
+    stmt = select(Faculty).where(Faculty.name == faculty_create.name)
+    result = await session.execute(stmt)
+    existing_data = result.scalars().first()
     
     if not existing_data:
         new_faculty = Faculty(name=faculty_create.name)
@@ -37,14 +40,9 @@ async def group_create_check(session: AsyncSession, group_name: str, faculty_nam
         name=group_name
     )
     
-    existing_data = await crud.get(
-        model=Group, 
-        filters=[
-            Group.name == group_create.name, 
-            Group.faculty_id == group_create.faculty_id
-        ],
-        single=True
-    )
+    stmt = select(Group).where(Group.name == group_create.name)
+    result = await session.execute(stmt)
+    existing_data = result.scalars().first()
     
     if not existing_data:
         new_group = Group(name=group_create.name)
