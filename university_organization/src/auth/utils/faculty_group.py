@@ -45,7 +45,7 @@ async def group_create_check(session: AsyncSession, group_name: str, faculty_nam
     existing_data = result.scalars().first()
     
     if not existing_data:
-        new_group = Group(name=group_create.name)
+        new_group = Group(name = group_create.name, faculty_id = group_create.faculty_id)
         session.add(new_group)
         await session.commit()
         await session.refresh(new_group)
