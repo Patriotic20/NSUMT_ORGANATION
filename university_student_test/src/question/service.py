@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.utils.basic_service import BasicService
 from .schemas import QuestionCreate, QuestionUpdate
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 from openpyxl import load_workbook
 from core.models.questions import Question
 from fastapi import HTTPException, status, UploadFile
@@ -57,8 +57,11 @@ class QuestionService:
         await self.session.commit()
 
         return {"status": "success", "message": f"{len(values)} questions uploaded successfully"}
-
-
+    
+    
+    async def get_question_by_id(self, question_id: int):
+        stmt = select(Question).where(Question.id == question_id)
+        result = await self.session.execute
 
     async def get_all_question(self, limit: int = 20, offset: int = 0):
         questions = await self.check_by_teacher_id(
@@ -99,7 +102,13 @@ class QuestionService:
         # Ensure filters is a list
         if filters is None:
             filters = []
-            
+
+        # Start base query (you can adjust the model)
+        stmt = select(Question)
+
+        # Apply filters if provided
+        for condition in filters:
+            stmt = stmt.where(condition)
 
         # Apply pagination
         if limit is not None:
@@ -107,14 +116,15 @@ class QuestionService:
         if offset:
             stmt = stmt.offset(offset)
 
+        # Execute
         result = await self.session.execute(stmt)
+        data = result.scalars().all()
 
-        data = result.scalars().all() if is_all else result.scalars().all()   
-        
+        # Handle empty result
         if not data:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Question not found"
             )
-        
+
         return data
