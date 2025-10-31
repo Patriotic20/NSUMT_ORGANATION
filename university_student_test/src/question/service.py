@@ -61,7 +61,8 @@ class QuestionService:
     
     async def get_question_by_id(self, question_id: int):
         stmt = select(Question).where(Question.id == question_id)
-        result = await self.session.execute
+        result = await self.session.execute(stmt)
+        return result.scalars().first()
 
     async def get_all_question(self, limit: int = 20, offset: int = 0):
         questions = await self.check_by_teacher_id(
