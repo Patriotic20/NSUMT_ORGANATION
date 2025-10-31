@@ -57,9 +57,12 @@ class AuthService:
             username=credentials.username,
             password=hashed_password,
         )
-
+        
+        
         user_data = await BasicService(session=self.session).create(
-            model=User, create_data=credentials_with_hash
+            model=User, 
+            create_data=credentials_with_hash, 
+            filters=[User.username == credentials_with_hash.username]
         )
         return user_data
 
