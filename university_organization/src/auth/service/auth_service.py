@@ -25,7 +25,6 @@ class AuthService:
             credentials=credentials, session=self.session
         )
         
-
         if user_data:
             
             data = {

@@ -12,14 +12,17 @@ async def faculty_create_check(session: AsyncSession, faculty_name: str) -> Facu
 
     faculty_name = normalize_type_name(value=faculty_name)
     faculty_create = FacultyCreate(name=faculty_name)
-
-    faculty_data = await crud.create(
-        model=Faculty,
-        create_data=faculty_create,
-        filters=[Faculty.name == faculty_name]
-    )
-
-    return faculty_data
+    
+    existing_data = await crud.get(model=Faculty, filters=[Faculty.name == faculty_create.name], single=True)
+    
+    if not existing_data:
+        new_faculty = Faculty(name=faculty_create.name)
+        session.add(new_faculty)
+        await session.commit()
+        await session.refresh(new_faculty)
+        return new_faculty
+    
+    return existing_data
 
 
 async def group_create_check(session: AsyncSession, group_name: str, faculty_name: str) -> Group:
@@ -33,12 +36,21 @@ async def group_create_check(session: AsyncSession, group_name: str, faculty_nam
         faculty_id=faculty_data.id,
         name=group_name
     )
-
-
-    group_data = await crud.create(
-        model=Group,
-        create_data=group_create,
-        filters=[Group.name == group_name, Group.faculty_id == faculty_data.id]
+    
+    existing_data = await crud.get(
+        model=Group, 
+        filters=[
+            Group.name == group_create.name, 
+            Group.faculty_id == group_create.faculty_id
+        ],
+        single=True
     )
-
-    return group_data
+    
+    if not existing_data:
+        new_group = Group(name=group_create.name)
+        session.add(new_group)
+        await session.commit()
+        await session.refresh(new_group)
+        return new_group
+    
+    return existing_data

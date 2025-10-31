@@ -99,11 +99,6 @@ class StudentService:
 
 
         student_dict = student_data.copy()
-
-        student_dict.pop("group", None)
-        student_dict.pop("faculty", None)
-
-
     
         student_schema = StudentCreate(
             group_id=group_data.id,
