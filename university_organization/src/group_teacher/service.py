@@ -48,36 +48,15 @@ class GroupTeacherService:
 
         return group_teacher
     
-        
     
-    # async def get_all(self, pagination: GetAll):
-    #     # 1️⃣ Count total records
-    #     count_stmt = select(func.count(GroupTeacher.id))
-    #     total_result = await self.session.execute(count_stmt)
-    #     total_count = total_result.scalar_one()
-
-    #     # 2️⃣ Query with relationships + pagination
-    #     stmt = (
-    #         select(GroupTeacher)
-    #         .options(
-    #             selectinload(GroupTeacher.group),
-    #             selectinload(GroupTeacher.teacher),
-    #         )
-    #         .limit(pagination.limit)
-    #         .offset(pagination.offset)
-    #     )
-
-    #     result = await self.session.scalars(stmt)
-    #     data = result.all()
-
-    #     if not data:
-    #         raise HTTPException(
-    #             status_code=status.HTTP_404_NOT_FOUND,
-    #             detail="No association found between group and teacher.",
-    #         )
-
-    #     # 3️⃣ Return both data and total count
-    #     return {"total": total_count, "items": data}
+    async def get_by_teacher_id(self, teacher_id: int):
+        stmt = (
+            select(GroupTeacher)
+            .where(GroupTeacher.teacher_id == teacher_id)
+            .options(
+                selectinload()
+            )
+        )
 
 
         

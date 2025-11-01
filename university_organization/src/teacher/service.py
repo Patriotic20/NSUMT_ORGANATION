@@ -27,7 +27,7 @@ class TeacherService:
     async def get_by_id(self , teacher_get: TeacherGet):
         return await self.service.get(
             model=Teacher,
-            filters=[Teacher.user_id == teacher_get.user_id],
+            filters=[Teacher.id == teacher_get.teacher_id],
             single=True
         )
 

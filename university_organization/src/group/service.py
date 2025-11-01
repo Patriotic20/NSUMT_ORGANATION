@@ -25,15 +25,6 @@ class GroupService:
             filters=[Group.name == create_data.name]
             )
         
-    async def assign_data(self, assign_data: AssignData):
-        return await self.service.create(
-            model=GroupTeacher,
-            create_data=assign_data,
-            filters=[
-                GroupTeacher.group_id == assign_data.group_id,
-                GroupTeacher.teacher_id == assign_data.teacher_id 
-                ]
-        )
         
     
     async def get_all(

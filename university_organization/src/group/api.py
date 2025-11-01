@@ -31,13 +31,6 @@ async def create(
     ):
     return await service.create(create_data=create_data)
 
-@router.post("/assign_teacher_group")
-async def assign_teacher_group(
-    assign_data: AssignData,
-    service: GroupService = Depends(get_group_service),
-    _: User = Depends(require_permission("create:groups"))
-):
-    return await service.assign_data(assign_data=assign_data)
 
 @router.get("")
 async def get_all(
