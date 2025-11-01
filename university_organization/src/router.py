@@ -20,7 +20,7 @@ from role.api import router as role_router
 
 from permission.api import router as perm_router
 
-from group_teacher import router as group_teacher
+from group_teacher.api import router as group_teacher
 
 router = APIRouter()
 
