@@ -34,7 +34,7 @@ class GroupService:
                 GroupTeacher.teacher_id == assign_data.teacher_id 
                 ]
         )
-    
+        
     
     async def get_all(self, pagination: GetAll):
         return await self.service.get(

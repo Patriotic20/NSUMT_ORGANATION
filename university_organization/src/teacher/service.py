@@ -32,11 +32,7 @@ class TeacherService:
     async def get_by_id(self , teacher_get: TeacherGet):
         return await self.service.get(
             model=Teacher,
-            filters=[
-                Teacher.id == teacher_get.id,
-                Teacher.chair_id == teacher_get.chair_id,
-                Teacher.user_id == teacher_get.user_id
-                ],
+            filters=[Teacher.user_id == teacher_get.user_id],
             single=True
         )
 

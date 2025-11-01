@@ -40,6 +40,4 @@ class TeacherResponse(TeacherBase):
 
 
 class TeacherGet(BaseModel):
-    id: int = Field(..., gt=0, description="Unique identifier of the teacher, must be greater than 0")
     user_id: int = Field(..., gt=0, description="ID of the user, must be greater than 0")
-    chair_id: int | None = Field(None, description="Optional chair ID associated with the teacher")
