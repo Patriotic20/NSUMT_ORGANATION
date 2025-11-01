@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends
 from core.schemas.get_all import GetAll
 
-from schemas import GroupTeacherCreate
-from schemas import GroupTeacherUpdate
+from .schemas import GroupTeacherCreate
+from .schemas import GroupTeacherUpdate
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.utils.database import db_helper
