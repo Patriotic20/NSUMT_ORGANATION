@@ -33,7 +33,7 @@ async def create(
     return await service.create(create_data=create_data)
 
 
-@router.get("", response_model=list[WorkerResponse])
+@router.get("")
 async def get_all(
     pagination: GetAll = Depends(), 
     service: WorkerService = Depends(get_worker_service),

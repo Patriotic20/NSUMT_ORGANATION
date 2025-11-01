@@ -38,7 +38,7 @@ async def assignment(
 ):
     return await service.assignment(create_data=create_data)
 
-@router.get("", response_model=list[RoleResponse])
+@router.get("")
 async def get_all(
     pagination: GetAll = Depends(),
     service: RoleService = Depends(get_role_service),

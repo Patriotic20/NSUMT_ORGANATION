@@ -32,7 +32,7 @@ async def assig(
     return await service.assig(user_role_create=create_data)
 
 
-@router.get("", response_model=None)
+@router.get("")
 async def get_all(
     pagination: Annotated[GetAll, Depends()],
     service: UserService = Depends(get_user_service),

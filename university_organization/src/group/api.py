@@ -39,7 +39,7 @@ async def assign_teacher_group(
 ):
     return await service.assign_data(assign_data=assign_data)
 
-@router.get("", response_model=list[GroupResponse])
+@router.get("")
 async def get_all(
     pagination: GetAll = Depends(),
     service: GroupService = Depends(get_group_service),

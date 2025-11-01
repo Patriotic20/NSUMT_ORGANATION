@@ -31,7 +31,7 @@ async def create(
     ):
     return await service.create(create_data=create_data)
 
-@router.get("", response_model=list[FacultyResponse])
+@router.get("")
 async def get_all(
     pagination: GetAll = Depends(),
     service: FacultyService = Depends(get_faculty_service),

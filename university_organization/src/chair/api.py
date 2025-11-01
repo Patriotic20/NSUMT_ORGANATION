@@ -33,7 +33,7 @@ async def create(
      
 
 
-@router.get("", response_model=list[ChairResponse])
+@router.get("")
 async def get_all(
     pagination: GetAll = Depends(),
     service: ChairService = Depends(get_chair_service),

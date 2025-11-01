@@ -1,6 +1,6 @@
 from typing import Generic, TypeVar, Type, Any, Optional, TypeAlias
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update, delete
+from sqlalchemy import select, and_, update, delete, func, desc
 from sqlalchemy.exc import SQLAlchemyError
 from pydantic import BaseModel
 from sqlalchemy.sql.elements import ColumnElement
@@ -58,45 +58,63 @@ class BasicService(Generic[ModelType, SchemaType]):
             raise e
 
     async def get(
-        self,
-        model: Type[ModelType],
-        filters: Optional[FilterList] = None,
-        pagination: Optional[GetAll] = None,
-        single: bool = False,
-    ):
-        try:
-            stmt = select(model)
+            self,
+            model: Type["ModelType"],
+            filters: Optional["FilterList"] = None,
+            pagination: Optional["GetAll"] = None,
+            single: bool = False,
+        ):
+            try:
+                filters = self.make_filter(filters)
 
-            filters = self.make_filter(filters)
-            if filters:
-                stmt = stmt.where(and_(*filters))
 
-            if pagination and not single:
-                stmt = stmt.offset(pagination.offset).limit(pagination.limit)
+                stmt = select(model)
+                if filters:
+                    stmt = stmt.where(and_(*filters))
 
-            result = await self.session.execute(stmt)
-            data = result.scalars()
 
-            if single:
-                obj = data.first()
-                if not obj:
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"{model.__name__} not found"
-                    )
-                return obj
-            else:
-                objs = data.all()
-                if not objs:
+                if hasattr(model, "id"):
+                    stmt = stmt.order_by(desc(model.id))
+
+                # --- Handle single fetch ---
+                if single:
+                    result = await self.session.execute(stmt)
+                    obj = result.scalars().first()
+                    if not obj:
+                        raise HTTPException(
+                            status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"{model.__name__} not found"
+                        )
+                    return obj
+
+                # --- Count total ---
+                count_stmt = select(func.count()).select_from(model)
+                if filters:
+                    count_stmt = count_stmt.where(and_(*filters))
+                total = (await self.session.execute(count_stmt)).scalar_one()
+
+                # --- Apply pagination ---
+                if pagination:
+                    stmt = stmt.offset(pagination.offset).limit(pagination.limit)
+
+                # --- Get data ---
+                result = await self.session.execute(stmt)
+                data = result.scalars().all()
+
+                if not data:
                     raise HTTPException(
                         status_code=status.HTTP_404_NOT_FOUND,
                         detail=f"{model.__name__}(s) not found"
                     )
-                return objs
 
-        except SQLAlchemyError as e:
-            await self.session.rollback()
-            raise e
+                return {
+                    "total": total,
+                    "data": data,
+                }
+
+            except SQLAlchemyError as e:
+                await self.session.rollback()
+                raise e
 
     async def update(
         self,

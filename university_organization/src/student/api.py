@@ -21,7 +21,7 @@ def get_student_service(session: AsyncSession = Depends(db_helper.session_getter
     return StudentService(session=session)
 
 
-@router.get("", response_model=list[StudentResponse])
+@router.get("")
 async def get_all(
     pagination: GetAll = Depends(),
     service: StudentService = Depends(get_student_service),

@@ -33,7 +33,7 @@ async def create(
     
 
 
-@router.get("", response_model=list[TeacherResponse])
+@router.get("")
 async def get_all(
     pagination: GetAll = Depends(),
     service: TeacherService = Depends(get_teacher_service),
