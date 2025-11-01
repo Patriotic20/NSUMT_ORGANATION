@@ -1,6 +1,10 @@
 from fastapi import APIRouter, Depends
 from core.schemas.get_all import GetAll
 
+from schemas import GroupTeacherCreate
+from schemas import GroupTeacherUpdate
+
+
 router = APIRouter(
     tags=["Group Teacher"],
     prefix="/group_teahcer"
@@ -9,7 +13,7 @@ router = APIRouter(
 
 @router.post()
 async def create(
-    create_data
+    create_data: GroupTeacherCreate
 ):
     pass
 
@@ -30,7 +34,7 @@ async def get_all(
 
 @router.put("/update")
 async def update(
-    update_data 
+    update_data: GroupTeacherUpdate = Depends()
 ):
     pass
 
