@@ -50,54 +50,54 @@ class GroupTeacherService:
     
         
     
-    async def get_all(self, pagination: GetAll):
-        # 1️⃣ Count total records
-        count_stmt = select(func.count(GroupTeacher.id))
-        total_result = await self.session.execute(count_stmt)
-        total_count = total_result.scalar_one()
+    # async def get_all(self, pagination: GetAll):
+    #     # 1️⃣ Count total records
+    #     count_stmt = select(func.count(GroupTeacher.id))
+    #     total_result = await self.session.execute(count_stmt)
+    #     total_count = total_result.scalar_one()
 
-        # 2️⃣ Query with relationships + pagination
-        stmt = (
-            select(GroupTeacher)
-            .options(
-                selectinload(GroupTeacher.group),
-                selectinload(GroupTeacher.teacher),
-            )
-            .limit(pagination.limit)
-            .offset(pagination.offset)
-        )
+    #     # 2️⃣ Query with relationships + pagination
+    #     stmt = (
+    #         select(GroupTeacher)
+    #         .options(
+    #             selectinload(GroupTeacher.group),
+    #             selectinload(GroupTeacher.teacher),
+    #         )
+    #         .limit(pagination.limit)
+    #         .offset(pagination.offset)
+    #     )
 
-        result = await self.session.scalars(stmt)
-        data = result.all()
+    #     result = await self.session.scalars(stmt)
+    #     data = result.all()
 
-        if not data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No association found between group and teacher.",
-            )
+    #     if not data:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_404_NOT_FOUND,
+    #             detail="No association found between group and teacher.",
+    #         )
 
-        # 3️⃣ Return both data and total count
-        return {"total": total_count, "items": data}
+    #     # 3️⃣ Return both data and total count
+    #     return {"total": total_count, "items": data}
 
 
         
         
     
-    async def update(self, id: int, update_data: GroupTeacherUpdate):
-        return await self.service.update(
-            model=GroupTeacher,
-            filters=[GroupTeacher.id == id],
-            unique_filters = [
-                GroupTeacher.group_id == update_data.group_id,
-                GroupTeacher.teacher_id == update_data.teacher_id
-                ],
-            update_data = update_data
-        )
+    # async def update(self, id: int, update_data: GroupTeacherUpdate):
+    #     return await self.service.update(
+    #         model=GroupTeacher,
+    #         filters=[GroupTeacher.id == id],
+    #         unique_filters = [
+    #             GroupTeacher.group_id == update_data.group_id,
+    #             GroupTeacher.teacher_id == update_data.teacher_id
+    #             ],
+    #         update_data = update_data
+    #     )
             
-    async def delete(self, id: int):
-        return await self.service.delete(
-            model = GroupTeacher,
-            filters = [
-                GroupTeacher.id == id 
-            ]
-        )
+    # async def delete(self, id: int):
+    #     return await self.service.delete(
+    #         model = GroupTeacher,
+    #         filters = [
+    #             GroupTeacher.id == id 
+    #         ]
+    #     )
