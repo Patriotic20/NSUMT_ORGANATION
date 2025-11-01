@@ -20,12 +20,7 @@ class TeacherService:
        return await self.service.create(
             model=Teacher, 
             create_data=create_data,
-            filters=[
-                Teacher.user_id == create_data.user_id,
-                Teacher.first_name == create_data.first_name,
-                Teacher.last_name == create_data.last_name,
-                Teacher.patronymic == create_data.patronymic
-                ]
+            filters=[Teacher.user_id == create_data.user_id]
             )
         
         
@@ -38,11 +33,14 @@ class TeacherService:
 
     async def get_all(
         self,
-        pagination: GetAll 
+        pagination: GetAll, 
+        search: str | None = None,
         ):
         return await self.service.get(
             model=Teacher,
-            pagination=pagination
+            pagination=pagination,
+            search=search,
+            search_fields=["first_name", "last_name", "patronymic"]
             )
     
     async def update(

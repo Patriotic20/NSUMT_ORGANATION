@@ -36,10 +36,16 @@ class GroupService:
         )
         
     
-    async def get_all(self, pagination: GetAll):
+    async def get_all(
+        self, 
+        pagination: GetAll,
+        search: str | None = None,
+        ):
         return await self.service.get(
             model=Group,
             pagination=pagination,
+            search=search,
+            search_fields=["name"]
         )
     
     async def get_by_id(self, group_get: GroupGet):

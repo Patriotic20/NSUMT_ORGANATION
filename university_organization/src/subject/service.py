@@ -38,10 +38,16 @@ class SubjectService:
             single=True
         )
 
-    async def get_all_subjects(self, pagination: GetAll):
+    async def get_all_subjects(
+        self, 
+        pagination: GetAll, 
+        search: str | None = None
+        ):
         return await self.service.get(
             model=Subject,
             pagination = pagination,
+            search=search,
+            search_fields=["name"]
         )
 
 

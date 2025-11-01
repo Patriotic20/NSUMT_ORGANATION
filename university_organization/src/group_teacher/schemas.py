@@ -10,3 +10,4 @@ class GroupTeacherCreate(BaseModel):
 class GroupTeacherUpdate(BaseModel):
     group_id: int | None = None
     teacher_id: int | None = None
+

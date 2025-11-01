@@ -1,6 +1,6 @@
 from typing import Generic, TypeVar, Type, Any, Optional, TypeAlias
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update, delete, func, desc
+from sqlalchemy import select, and_, update, delete, func, desc, or_
 from sqlalchemy.exc import SQLAlchemyError
 from pydantic import BaseModel
 from sqlalchemy.sql.elements import ColumnElement
@@ -63,16 +63,29 @@ class BasicService(Generic[ModelType, SchemaType]):
             filters: Optional["FilterList"] = None,
             pagination: Optional["GetAll"] = None,
             single: bool = False,
+            search: Optional[str] = None,
+            search_fields: Optional[list[str]] = None,  
         ):
             try:
                 filters = self.make_filter(filters)
 
-
                 stmt = select(model)
+
+                # --- Apply filters ---
                 if filters:
                     stmt = stmt.where(and_(*filters))
 
+                # --- Apply search ---
+                if search and search_fields:
+                    search_clauses = []
+                    for field_name in search_fields:
+                        if hasattr(model, field_name):
+                            field = getattr(model, field_name)
+                            search_clauses.append(field.ilike(f"%{search}%"))
+                    if search_clauses:
+                        stmt = stmt.where(or_(*search_clauses))
 
+                # --- Order by newest first if model has id ---
                 if hasattr(model, "id"):
                     stmt = stmt.order_by(desc(model.id))
 
@@ -91,6 +104,9 @@ class BasicService(Generic[ModelType, SchemaType]):
                 count_stmt = select(func.count()).select_from(model)
                 if filters:
                     count_stmt = count_stmt.where(and_(*filters))
+                if search and search_fields and search_clauses:
+                    count_stmt = count_stmt.where(or_(*search_clauses))
+
                 total = (await self.session.execute(count_stmt)).scalar_one()
 
                 # --- Apply pagination ---
