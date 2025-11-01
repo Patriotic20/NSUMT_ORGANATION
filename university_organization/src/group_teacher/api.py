@@ -21,7 +21,7 @@ router = APIRouter(
 def get_group_service(session: AsyncSession = Depends(db_helper.session_getter)):
     return GroupTeacherService(session=session)
 
-@router.post()
+@router.post("/create")
 async def create(
     create_data: GroupTeacherCreate,
     service: GroupTeacherService = Depends(get_group_service),
