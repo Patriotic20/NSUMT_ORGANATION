@@ -19,11 +19,11 @@ class GroupTeacher(Base, IntIdPkMixin):
     teacher_id: Mapped[int] = mapped_column(ForeignKey("teachers.id", ondelete="CASCADE"))
     
     
-    group: Mapped["Group"] = relationship(
-        "Group",
-        back_populates="teachers",
-    )
-    teacher: Mapped["Teacher"] = relationship(
-        "Teacher",
-        back_populates="groups",
-    )
+    # group: Mapped["Group"] = relationship(
+    #     "Group",
+    #     back_populates="teachers",
+    # )
+    # teacher: Mapped["Teacher"] = relationship(
+    #     "Teacher",
+    #     back_populates="groups",
+    # )
