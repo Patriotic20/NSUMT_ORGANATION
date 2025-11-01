@@ -35,11 +35,12 @@ async def create(
 
 @router.get("")
 async def get_all(
+    search: str | None = None,
     pagination: GetAll = Depends(),
     service: TeacherService = Depends(get_teacher_service),
     _: User = Depends(require_permission("read:teachers"))
     ):
-    return await service.get_all(pagination=pagination)
+    return await service.get_all(pagination=pagination, search=search)
     
 
 

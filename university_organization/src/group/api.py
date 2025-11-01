@@ -41,11 +41,12 @@ async def assign_teacher_group(
 
 @router.get("")
 async def get_all(
+    search: str | None = None,
     pagination: GetAll = Depends(),
     service: GroupService = Depends(get_group_service),
     _: User = Depends(require_permission("read:groups"))
     ):
-    return await service.get_all(pagination=pagination)
+    return await service.get_all(pagination=pagination, search = search)
 
 
 @router.get("/get/{id}", response_model=GroupResponse)
