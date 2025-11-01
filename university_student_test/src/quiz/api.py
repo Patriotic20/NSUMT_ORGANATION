@@ -33,7 +33,8 @@ async def create(
 
 @router.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    return save_file(file=file)
+    url_data = save_file(file=file)
+    return {"file_url": url_data}
         
     
     
