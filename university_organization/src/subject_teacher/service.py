@@ -10,7 +10,7 @@ from core.models.subject_teacher_association import SubjectTeacher
 from core.utils.service import BasicService
 
 from .schemas import SubjectTeacherCreate
-
+from .schemas import SubjectTeacherUpdate
 
 class SubjectTeacherService:
     def __init__(self, session: AsyncSession):
@@ -65,4 +65,19 @@ class SubjectTeacherService:
         subjects = [gt.subject for gt in subject_teacher if gt.subject is not None]
         return subjects
         
+    async def update(self, id: int, update_data: SubjectTeacherUpdate):
+        return await self.service.update(
+            model = SubjectTeacher,
+            filters = [SubjectTeacher.id == id],
+            unique_filters = [
+                SubjectTeacher.subject_id == update_data.subject_id,
+                SubjectTeacher.teacher_id == update_data.teacher_id
+                ],
+            update_data=update_data
+        )
         
+    async def delete(self, id: int):
+        return await self.service.delete(
+            model=SubjectTeacher,
+            filters=[SubjectTeacher.id == id]
+        )

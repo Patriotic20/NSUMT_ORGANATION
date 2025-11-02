@@ -48,23 +48,20 @@ async def get_by_teacher_id(
     return await service.get_by_teacher_id(teacher_id=id)
     
 
-# @router.get()
-# async def get_all(
-#     pagination: GetAll = Depends()
-# ):
-#     pass
+@router.put("/update/{id}")
+async def update(
+    id: int,
+    update_data: GroupTeacherUpdate = Depends(),
+    service: GroupTeacherService = Depends(get_group_service),
+    _: TokenPaylod = Depends(require_permission("update:group_teacher"))
+):
+    return await service.update(id=id, update_data=update_data)
 
-# @router.put("/update")
-# async def update(
-#     update_data: GroupTeacherUpdate = Depends()
-# ):
-#     pass
-
-# @router.delete("/delete/{id}")
-# async def delete(
-#     id: int,
-#     group_id: int | None = None,
-#     teacher_id: int | None = None,
-# ):
-#     pass
+@router.delete("/delete/{id}")
+async def delete(
+    id: int,
+    service: GroupTeacherService = Depends(get_group_service),
+    _: TokenPaylod = Depends(require_permission("delete:group_teacher"))
+):
+    return await service.delete(id=id)
 

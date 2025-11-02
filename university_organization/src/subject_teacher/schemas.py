@@ -7,7 +7,7 @@ class SubjectTeacherCreate(BaseModel):
     teacher_id: int
 
 
-class SubjectTeacherCreate(BaseModel):
+class SubjectTeacherUpdate(BaseModel):
     
     subject_id: int | None = None
     teacher_id: int | None = None 

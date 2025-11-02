@@ -76,21 +76,21 @@ class GroupTeacherService:
         
         
     
-    # async def update(self, id: int, update_data: GroupTeacherUpdate):
-    #     return await self.service.update(
-    #         model=GroupTeacher,
-    #         filters=[GroupTeacher.id == id],
-    #         unique_filters = [
-    #             GroupTeacher.group_id == update_data.group_id,
-    #             GroupTeacher.teacher_id == update_data.teacher_id
-    #             ],
-    #         update_data = update_data
-    #     )
+    async def update(self, id: int, update_data: GroupTeacherUpdate):
+        return await self.service.update(
+            model=GroupTeacher,
+            filters=[GroupTeacher.id == id],
+            unique_filters = [
+                GroupTeacher.group_id == update_data.group_id,
+                GroupTeacher.teacher_id == update_data.teacher_id
+                ],
+            update_data = update_data
+        )
             
-    # async def delete(self, id: int):
-    #     return await self.service.delete(
-    #         model = GroupTeacher,
-    #         filters = [
-    #             GroupTeacher.id == id 
-    #         ]
-    #     )
+    async def delete(self, id: int):
+        return await self.service.delete(
+            model = GroupTeacher,
+            filters = [
+                GroupTeacher.id == id 
+            ]
+        )

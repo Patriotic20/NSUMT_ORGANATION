@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .schemas import SubjectTeacherCreate
 from .service import SubjectTeacherService
+from .schemas import SubjectTeacherUpdate
 
 from core.utils.database import db_helper
 
@@ -31,7 +32,7 @@ async def create(
 async def get_by_id(
     id: int,
     service: SubjectTeacherService = Depends(get_service),
-    _: TokenPaylod = Depends(require_permission("create:subject_teacher"))
+    _: TokenPaylod = Depends(require_permission("read:subject_teacher"))
 ):
     return await service.get_by_id(id=id)
 
@@ -40,6 +41,26 @@ async def get_by_id(
 async def get_by_teacher_id(
     id: int,
     service: SubjectTeacherService = Depends(get_service),
-    _: TokenPaylod = Depends(require_permission("create:subject_teacher"))
+    _: TokenPaylod = Depends(require_permission("read:subject_teacher"))
 ):
     return await service.get_by_teacher_id(teacher_id=id)
+
+
+@router.put("/update/{id}")
+async def update(
+    id: int,
+    update_data: SubjectTeacherUpdate,
+    service: SubjectTeacherService = Depends(get_service),
+    _: TokenPaylod = Depends(require_permission("update:subject_teacher"))
+):
+    return await service.update(id = id, update_data = update_data)
+
+@router.delete("/delete/{id}")
+async def delete(
+    id: int,
+    service: SubjectTeacherService = Depends(get_service),
+    _: TokenPaylod = Depends(require_permission("delete:subject_teacher"))
+    
+):
+    return await service.delete(id=id)
+
