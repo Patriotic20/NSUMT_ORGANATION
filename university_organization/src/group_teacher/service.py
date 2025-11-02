@@ -10,6 +10,7 @@ from sqlalchemy.orm import selectinload
 
 
 from core.utils.service import BasicService
+from core.models.group import Group
 from core.models.group_teacher import GroupTeacher
 from core.schemas.get_all import GetAll
 
@@ -54,7 +55,7 @@ class GroupTeacherService:
             select(GroupTeacher)
             .where(GroupTeacher.teacher_id == teacher_id)
             .options(
-                selectinload()
+                selectinload(GroupTeacher.group).selectinload(Group.students)
             )
         )
 
