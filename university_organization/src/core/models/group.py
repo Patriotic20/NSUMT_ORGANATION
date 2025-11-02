@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .faculty import Faculty
     from .student import Student
-    from .teacher import Teacher
+    from .group_teacher import GroupTeacher
 
 class Group(Base, IntIdPkMixin):
     
@@ -25,11 +25,13 @@ class Group(Base, IntIdPkMixin):
         passive_deletes=True  
         )
     
-    teachers: Mapped[list["Teacher"]] = relationship(
-        "Teacher",
-        secondary="group_teachers",
-        back_populates="groups"
+    group_teachers: Mapped[list["GroupTeacher"]] = relationship(
+        "GroupTeacher",
+        back_populates="group",
+        cascade="all, delete-orphan",
+        passive_deletes=True
     )
+
    
     
     

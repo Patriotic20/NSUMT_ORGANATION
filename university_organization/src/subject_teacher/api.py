@@ -1,23 +1,37 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from .schemas import SubjectTeacherCreate
+from .service import SubjectTeacherService
 
+from core.utils.database import db_helper
+
+from auth.schemas.auth import TokenPaylod
+
+from auth.utils.dependencies import require_permission
 
 router = APIRouter(
     tags=["Subject Teacher"],
     prefix="/subject_teacher"
 )
 
+def get_service(session: AsyncSession = Depends(db_helper.session_getter)):
+    return SubjectTeacherService(session=session)
 
 @router.post("/create")
 async def create(
-    create_data: SubjectTeacherCreate
+    create_data: SubjectTeacherCreate,
+    service: SubjectTeacherService = Depends(get_service),
+    _: TokenPaylod = Depends(require_permission("create:subject_teacher"))
 ):
-    pass
+    return await service.create(create_data=create_data)
+
 
 @router.get("/get/{id}")
 async def get_by_id(
-    id: int
+    id: int,
+    service: SubjectTeacherService = Depends(get_service),
+    _: TokenPaylod = Depends(require_permission("create:subject_teacher"))
 ):
-    pass
+    return await service.get_by_id(id=id)
 

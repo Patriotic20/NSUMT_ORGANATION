@@ -20,7 +20,8 @@ from role.api import router as role_router
 
 from permission.api import router as perm_router
 
-from group_teacher.api import router as group_teacher
+from group_teacher.api import router as group_teacher_router
+from subject_teacher.api import router as subject_teacher_router
 
 router = APIRouter()
 
@@ -34,7 +35,10 @@ router.include_router(worker_router)
 router.include_router(faculty_router)
 router.include_router(chair_router)
 router.include_router(group_router)
-router.include_router(group_teacher)
+
+router.include_router(group_teacher_router)
+router.include_router(subject_teacher_router)
+
 
 router.include_router(subject_router)
 
