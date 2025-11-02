@@ -55,10 +55,23 @@ class GroupTeacherService:
             select(GroupTeacher)
             .where(GroupTeacher.teacher_id == teacher_id)
             .options(
-                selectinload(GroupTeacher.group).selectinload(Group.students)
+                selectinload(GroupTeacher.group)  
             )
         )
+        
+        result = await self.session.execute(stmt)
+        group_teachers = result.scalars().all()
+        
+        
+        if not group_teachers:
+            raise HTTPException(
+                status_code=404, 
+                detail="No groups found for this teacher"
+                )
 
+        # Extract groups from the association records
+        groups = [gt.group for gt in group_teachers if gt.group is not None]
+        return groups
 
         
         

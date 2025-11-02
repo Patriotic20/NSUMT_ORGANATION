@@ -37,6 +37,15 @@ async def get_by_id(
     _: TokenPaylod = Depends(require_permission("read:group_teacher"))
 ):
     return await service.get_by_id(id=id)
+
+
+@router.get("/get/teacher/{id}")
+async def get_by_teacher_id(
+    id: int,
+    service: GroupTeacherService = Depends(get_group_service),
+    _: TokenPaylod = Depends(require_permission("read:group_teacher"))
+):
+    return await service.get_by_teacher_id(teacher_id=id)
     
 
 # @router.get()

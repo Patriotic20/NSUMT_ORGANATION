@@ -35,3 +35,11 @@ async def get_by_id(
 ):
     return await service.get_by_id(id=id)
 
+
+@router.get("/get/teacher/{id}")
+async def get_by_teacher_id(
+    id: int,
+    service: SubjectTeacherService = Depends(get_service),
+    _: TokenPaylod = Depends(require_permission("create:subject_teacher"))
+):
+    return await service.get_by_teacher_id(teacher_id=id)
