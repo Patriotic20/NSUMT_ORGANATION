@@ -23,9 +23,9 @@ class QuizStatus(enum.Enum):
 class Quiz(Base, IntIdPkMixin):
     __tablename__ = "quizzes"
     
-    user_id: Mapped[int] = mapped_column(Integer, nullable=True)
-    group_id: Mapped[int] = mapped_column(Integer, nullable=True)
-    subject_id: Mapped[int] = mapped_column(Integer, nullable=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    group_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    subject_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     quiz_name: Mapped[str] = mapped_column(String, nullable=False)
     question_number: Mapped[int] = mapped_column(Integer, nullable=False)

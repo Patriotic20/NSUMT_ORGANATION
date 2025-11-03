@@ -16,8 +16,8 @@ class Question(Base, IntIdPkMixin):
     __tablename__ = "questions"
     
     
-    subject_id: Mapped[int] = mapped_column(nullable=True)
-    user_id: Mapped[int] = mapped_column(nullable=True)
+    subject_id: Mapped[int | None] = mapped_column(nullable=True)
+    user_id: Mapped[int | None] = mapped_column(nullable=True)
 
     text: Mapped[str] = mapped_column(nullable=False)
     option_a: Mapped[str] = mapped_column(nullable=False)  
