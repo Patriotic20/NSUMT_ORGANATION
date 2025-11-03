@@ -21,7 +21,7 @@ def get_service(session: AsyncSession = Depends(db_helper.session_getter)):
 
 @router.post("/create")
 async def create(
-    create_data: SubjectTeacherCreate,
+    create_data: SubjectTeacherCreate = Depends(),
     service: SubjectTeacherService = Depends(get_service),
     _: TokenPaylod = Depends(require_permission("create:subject_teacher"))
 ):
