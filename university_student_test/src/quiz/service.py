@@ -31,13 +31,22 @@ class QuizService:
         self,
         limit: int = 20, 
         offset: int = 0,
+        group_id: int | None = None
     ):
-        return await self.check_by_teacher_id(
-            limit=limit,
-            offset=offset,
-            is_all=True,
-            raise_not_found=True,
-        )
+        stmt = select(Quiz)
+
+        # ✅ Apply filter only if group_id is provided
+        if group_id is not None:
+            stmt = stmt.where(Quiz.group_id == group_id)
+
+        
+        # ✅ Apply pagination
+        stmt = stmt.limit(limit).offset(offset)
+
+        result = await self.session.scalars(stmt)
+        return result.all()
+        
+        
 
     async def update_quiz(
         self, 

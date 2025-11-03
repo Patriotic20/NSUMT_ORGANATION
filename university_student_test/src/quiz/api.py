@@ -2,13 +2,14 @@ from fastapi import APIRouter , Depends, UploadFile , File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .service import QuizService 
-from .schemas import QuizBase , QuizUpdate , QuizResponse
+from .schemas import QuizBase , QuizUpdate , QuizCreate
 
 from core.database.db_helper import db_helper 
 from auth.schemas.auth import TokenPaylod
 
 from auth.utils.security import require_permission
 from core.utils.save_file import save_file
+
 
 
 router = APIRouter(
@@ -22,12 +23,13 @@ def get_quiz_service(session: AsyncSession = Depends(db_helper.session_getter)):
 
 
 
-@router.post("/create" , response_model=QuizResponse)
+@router.post("/create")
 async def create(
     quiz_data: QuizBase,
     service: QuizService = Depends(get_quiz_service),
-    _ : TokenPaylod = Depends(require_permission("create:quiz"))
+    current_user : TokenPaylod = Depends(require_permission("create:quiz"))
 ):
+    quiz_data = QuizCreate(user_id = current_user.user_id)
     return await service.create_quiz(quiz_data=quiz_data)
 
 
@@ -39,7 +41,7 @@ async def upload_file(file: UploadFile = File(...)):
     
     
 
-@router.get("/get/{quiz_id}" , response_model=QuizResponse)
+@router.get("/get/{quiz_id}")
 async def get_by_id(
     quiz_id: int,
     service: QuizService = Depends(get_quiz_service),
@@ -52,9 +54,9 @@ async def get_all(
     limit: int = 20,
     offset: int = 0,
     service: QuizService = Depends(get_quiz_service),
-    _ : TokenPaylod = Depends(require_permission("read:quiz"))
+    current_user : TokenPaylod = Depends(require_permission("read:quiz"))
 ):
-    return await service.get_all_quiz(limit=limit, offset=offset)
+    return await service.get_all_quiz(limit=limit, offset=offset, group_id = current_user.group_id)
 
 @router.patch("/update/{quiz_id}")
 async def update(

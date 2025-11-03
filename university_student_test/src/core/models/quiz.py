@@ -22,7 +22,9 @@ class QuizStatus(enum.Enum):
 class Quiz(Base, IntIdPkMixin):
     __tablename__ = "quizzes"
     
-    subject_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    quiz_name: Mapped[str] = mapped_column(String, nullable=False)
+    user_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    group_id: Mapped[int] = mapped_column(Integer, nullable=False)
     question_number: Mapped[int] = mapped_column(Integer, nullable=False)
     quiz_time: Mapped[int] = mapped_column(Integer, nullable=False)  
     start_time: Mapped[datetime] = mapped_column(nullable=False)

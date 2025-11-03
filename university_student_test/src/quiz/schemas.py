@@ -2,12 +2,14 @@ from pydantic import BaseModel, field_validator, Field, field_serializer, Config
 from datetime import datetime
 from fastapi import HTTPException, status
 
+from typing import Optional
 
 DEFAULT_START_TIME = datetime(1970, 1, 1, 0, 0, 0)
 
 
 class QuizBase(BaseModel):
-    subject_id: int
+    quiz_name: str
+    group_id: int
     question_number: int
     quiz_time: int
     start_time: datetime = Field(default=DEFAULT_START_TIME)
@@ -42,32 +44,40 @@ class QuizBase(BaseModel):
         return v
 
 
-class QuizCreate(QuizBase):
-    teacher_id: int
 
+class QuizCreate(BaseModel):
+    
+    user_id: int
 
-class QuizResponse(QuizCreate):
-    id: int
-    subject_id: int
-    teacher_id: int | None = None
-    question_number: int
-    quiz_time: int
-    start_time: datetime
-    end_time: datetime
-    quiz_pin: str
+# class QuizResponse(QuizBase):
+#     id: int
+#     quiz_name: str
+#     user_id: int | None = None
+#     group_id: int | None = None
+#     question_number: int
+#     quiz_time: int
+#     start_time: datetime
+#     end_time: datetime
+#     quiz_pin: str
 
-    model_config = ConfigDict(from_attributes=True)
+#     model_config = ConfigDict(from_attributes=True)
 
-    @field_serializer("start_time", "end_time", when_used="json")
-    def serialize_dt(self, value: datetime) -> str:
-        return value.strftime("%Y-%m-%d %H:%M:%S")
+#     @field_serializer("start_time", "end_time", when_used="json")
+#     def serialize_dt(self, value: datetime) -> str:
+#         return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class QuizUpdate(BaseModel):
-    question_number: int | None = None
-    quiz_time: int | None = None
+    
+    quiz_name: Optional[str] = None
+    question_number: Optional[int] = None
+    quiz_time: Optional[int] = None
+    start_time: Optional[datetime] = None
+    quiz_pin: Optional[str] = None
     start_time: datetime = Field(default=DEFAULT_START_TIME)
-    quiz_pin: str | None = None
+
+
+
 
     @field_validator("start_time", mode="before")
     def normalize_start_time(cls, v) -> datetime:
