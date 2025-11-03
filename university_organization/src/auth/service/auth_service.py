@@ -22,33 +22,50 @@ class AuthService:
 
     async def login(self, credentials: UserCredentials):
         user_data: User = await authenticate_user_from_db(
-            credentials=credentials, session=self.session
+            credentials=credentials, 
+            session=self.session
         )
-        
+
         if user_data:
-            
+            # Existing user
+            roles = [role.name for role in user_data.roles]
+
             data = {
                 "user_id": user_data.id,       
                 "username": user_data.username,
+                "roles": roles
             }
+
         else:
-        
+            # Authenticate with HEMIS if user not found locally
             token = await authenticate_user_with_hemis(
-                credentials=credentials, session=self.session
+                credentials=credentials, 
+                session=self.session
             )
+            
             service = StudentService(session=self.session, token=token)
             student_data = await service.save_student_data_to_db()
 
+            # Re-fetch the user after saving
+            user_data: User = await authenticate_user_from_db(
+                credentials=credentials, 
+                session=self.session
+            )
+            
+            roles = [role.name for role in user_data.roles]
+
             data = {
                 "user_id": student_data["user_id"],
-                "group_id": student_data["group_id"],
                 "username": student_data["username"],
+                "group_id": student_data["group_id"],
+                "roles": roles
             }
 
         return {
             "access_token": create_access_token(data=data),
             "refresh_token": create_refresh_token(data=data),
         }
+
 
 
 

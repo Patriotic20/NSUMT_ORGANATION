@@ -25,8 +25,10 @@ async def student_register(session: AsyncSession, credentials: UserCredentials):
             user_role = Role(name="student")
             session.add(user_role)
             await session.flush()  
-
-        # Check if user exists
+            
+            
+        
+        
         stmt = select(User).where(User.username == credentials.username)
         result = await session.execute(stmt)
         existing_user = result.scalar_one_or_none()
