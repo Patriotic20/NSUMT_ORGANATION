@@ -49,10 +49,12 @@ async def get_by_id(
 @router.get("")
 async def get_all(
     search: str | None = None, 
-    pagination: GetAll = Depends(),
+    limit: int = 500,
+    offset: int = 0,
     service: SubjectService = Depends(get_subject_service),
     _ : TokenPaylod = Depends(require_permission("read:subjects"))
 ):
+    pagination = GetAll(limit = limit, offset = offset)
     return await service.get_all_subjects(pagination = pagination, search=search)
 
 @router.put("/update/{subject_id}")
