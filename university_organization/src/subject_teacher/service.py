@@ -46,7 +46,6 @@ class SubjectTeacherService:
         return subject_teacher
     
     async def get_by_teacher_id(self, teacher_id: int):
-        
         stmt = (
             select(SubjectTeacher)
             .where(SubjectTeacher.teacher_id == teacher_id)
@@ -54,15 +53,14 @@ class SubjectTeacherService:
                 selectinload(SubjectTeacher.subject)
             )
         )
-        
-        
+
         result = await self.session.execute(stmt)
-        subject_teacher = result.scalar_one_or_none() 
-        
-        if not subject_teacher:
-            raise HTTPException(status_code=404, detail="SubjectTeacher not found")
-        
-        subjects = [gt.subject for gt in subject_teacher if gt.subject is not None]
+        subject_teachers = result.scalars().all()  
+
+        if not subject_teachers:
+            raise HTTPException(status_code=404, detail="No groups found for this teacher")
+
+        subjects = [st.subject for st in subject_teachers if st.subject is not None]
         return subjects
         
     async def update(self, id: int, update_data: SubjectTeacherUpdate):

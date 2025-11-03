@@ -49,7 +49,7 @@ async def get_by_teacher_id(
 @router.put("/update/{id}")
 async def update(
     id: int,
-    update_data: SubjectTeacherUpdate,
+    update_data: SubjectTeacherUpdate = Depends(),
     service: SubjectTeacherService = Depends(get_service),
     _: TokenPaylod = Depends(require_permission("update:subject_teacher"))
 ):

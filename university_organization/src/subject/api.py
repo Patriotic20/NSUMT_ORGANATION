@@ -28,14 +28,7 @@ async def create(
 ):
     return await service.create_subject(subject_data=subject_data)
 
-@router.post("/assign_teacher")
-async def assign_teacher(
-    assign_data: AssignTeacher = Depends(),
-    service: SubjectService = Depends(get_subject_service),
-    _ : TokenPaylod = Depends(require_permission("create:subjects"))
 
-):
-    return await service.assign_teacher(assign_data=assign_data)
 
 @router.get("/get/{subject_id}")
 async def get_by_id(

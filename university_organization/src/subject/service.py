@@ -20,16 +20,6 @@ class SubjectService:
             )
         
         
-    async def assign_teacher(self, assign_data: AssignTeacher):
-        return await self.service.create(
-            model = SubjectTeacher,
-            filters = [
-                SubjectTeacher.subject_id == assign_data.subject_id,
-                SubjectTeacher.teacher_id == assign_data.teacher_id,
-                ],
-            create_data = assign_data,
-        )
-        
 
     async def get_subject_by_id(self, subject_id: int | None = None):
         return await self.service.get(

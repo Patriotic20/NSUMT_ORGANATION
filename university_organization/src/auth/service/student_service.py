@@ -86,28 +86,37 @@ class StudentService:
         group_name = student_data.get("group")
         faculty_name = student_data.get("faculty")
 
-        # get user
+        # Get user
         user_data: User = await get_user(session=self.session, username=username)
-        
         if not user_data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"User not found but change inextion inside user_data {user_data}",
+                detail=f"User with username '{username}' not found"
             )
 
-        group_data = await group_create_check(group_name=group_name, faculty_name=faculty_name ,session=self.session)
+        # Ensure group exists or create it
+        group_data = await group_create_check(
+            group_name=group_name,
+            faculty_name=faculty_name,
+            session=self.session
+        )
 
-
-        student_dict = student_data.copy()
-    
+        # Prepare schema and create student
         student_schema = StudentCreate(
             group_id=group_data.id,
             user_id=user_data.id,
-            **student_dict
+            **student_data
         )
 
-        
+        await BasicService(session=self.session).create(
+            model=Student,
+            create_data=student_schema,
+        )
 
-        await BasicService(session=self.session).create(model=Student, create_data=student_schema)
+        # Return only required fields
+        return {
+            "user_id": user_data.id,
+            "group_id": group_data.id,
+            "username": username
+        }
 
-        return user_data

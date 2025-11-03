@@ -23,7 +23,7 @@ def get_group_service(session: AsyncSession = Depends(db_helper.session_getter))
 
 @router.post("/create")
 async def create(
-    create_data: GroupTeacherCreate,
+    create_data: GroupTeacherCreate = Depends(),
     service: GroupTeacherService = Depends(get_group_service),
     _: TokenPaylod = Depends(require_permission("create:group_teacher"))
 ):

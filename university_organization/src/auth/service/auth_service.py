@@ -40,8 +40,9 @@ class AuthService:
             student_data = await service.save_student_data_to_db()
 
             data = {
-                "user_id": student_data.id,
-                "username": student_data.username,                 
+                "user_id": student_data["user_id"],
+                "group_id": student_data["group_id"],
+                "username": student_data["username"],
             }
 
         return {
