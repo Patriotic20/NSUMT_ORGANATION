@@ -7,6 +7,7 @@ import enum
 
 if TYPE_CHECKING:
     from .results import Result
+    from .question_quiz import QuestionQuiz
 
 from .base import Base
 from .mixins.int_pr_ky import IntIdPkMixin
@@ -22,9 +23,11 @@ class QuizStatus(enum.Enum):
 class Quiz(Base, IntIdPkMixin):
     __tablename__ = "quizzes"
     
-    quiz_name: Mapped[str] = mapped_column(String, nullable=False)
     user_id: Mapped[int] = mapped_column(Integer, nullable=False)
     group_id: Mapped[int] = mapped_column(Integer, nullable=False)
+    subject_id: Mapped[int] = mapped_column(Integer, nullable=False)
+
+    quiz_name: Mapped[str] = mapped_column(String, nullable=False)
     question_number: Mapped[int] = mapped_column(Integer, nullable=False)
     quiz_time: Mapped[int] = mapped_column(Integer, nullable=False)  
     start_time: Mapped[datetime] = mapped_column(nullable=False)
@@ -38,6 +41,8 @@ class Quiz(Base, IntIdPkMixin):
     )
     
     results: Mapped["Result"] = relationship("Result", back_populates="quiz")
+    
+    question_quizzes: Mapped[list["QuestionQuiz"]] = relationship("QuestionQuiz", back_populates="quiz")
 
     @property
     def current_status(self) -> QuizStatus:

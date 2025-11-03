@@ -1,21 +1,32 @@
 from sqlalchemy.orm import mapped_column
 from sqlalchemy.orm import Mapped
 import random
+from sqlalchemy.orm import relationship
 
 from .base import Base
 from .mixins.int_pr_ky import IntIdPkMixin
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .question_quiz import QuestionQuiz
+
 
 class Question(Base, IntIdPkMixin):
     __tablename__ = "questions"
-
+    
+    
     subject_id: Mapped[int] = mapped_column(nullable=False)
+    user_id: Mapped[int] = mapped_column(nullable=False)
 
     text: Mapped[str] = mapped_column(nullable=False)
-    option_a: Mapped[str] = mapped_column(nullable=False)  # always correct
+    option_a: Mapped[str] = mapped_column(nullable=False)  
     option_b: Mapped[str] = mapped_column(nullable=False)
     option_c: Mapped[str] = mapped_column(nullable=False)
     option_d: Mapped[str] = mapped_column(nullable=False)
+    
+    
+    question_quizzes: Mapped[list["QuestionQuiz"]] = relationship("QuestionQuiz", back_populates="question")
 
     
 

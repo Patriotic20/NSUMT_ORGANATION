@@ -8,8 +8,10 @@ DEFAULT_START_TIME = datetime(1970, 1, 1, 0, 0, 0)
 
 
 class QuizBase(BaseModel):
-    quiz_name: str
     group_id: int
+    subject_id: int
+    
+    quiz_name: str
     question_number: int
     quiz_time: int
     start_time: datetime = Field(default=DEFAULT_START_TIME)
@@ -45,9 +47,10 @@ class QuizBase(BaseModel):
 
 
 
-class QuizCreate(BaseModel):
+class QuizCreate(QuizBase):
     
     user_id: int
+
 
 # class QuizResponse(QuizBase):
 #     id: int
@@ -105,3 +108,9 @@ class QuizUpdate(BaseModel):
                 detail="start_time cannot be in the past"
             )
         return v
+
+
+class QuestionQuizCreate(BaseModel):
+    
+    question_id: int
+    quiz_id: int
