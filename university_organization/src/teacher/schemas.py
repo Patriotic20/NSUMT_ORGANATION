@@ -41,3 +41,8 @@ class TeacherResponse(TeacherBase):
 
 class TeacherGet(BaseModel):
     teacher_id: int = Field(..., gt=0, description="ID of the user, must be greater than 0")
+
+
+class CreateTeacherRole(BaseModel):
+    user_id: int
+    role_id: int
