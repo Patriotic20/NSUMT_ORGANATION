@@ -11,6 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from core.utils.service import BasicService
 from core.models.group import Group
+from core.models.teacher import Teacher
 from core.models.group_teacher import GroupTeacher
 from core.schemas.get_all import GetAll
 
@@ -50,27 +51,33 @@ class GroupTeacherService:
         return group_teacher
     
     
-    async def get_by_teacher_id(self, teacher_id: int):
-        stmt = (
-            select(GroupTeacher)
-            .where(GroupTeacher.teacher_id == teacher_id)
+    async def get_by_teacher_id(self, user_id: int):
+        stmt_user = (
+            select(Teacher)
+            .where(Teacher.user_id == user_id)
             .options(
-                selectinload(GroupTeacher.group)  
+                selectinload(Teacher.group_teachers).selectinload(GroupTeacher.group)
             )
         )
-        
-        result = await self.session.execute(stmt)
-        group_teachers = result.scalars().all()
-        
-        
-        if not group_teachers:
-            raise HTTPException(
-                status_code=404, 
-                detail="No groups found for this teacher"
-                )
 
-        # Extract groups from the association records
-        groups = [gt.group for gt in group_teachers if gt.group is not None]
+        result = await self.session.execute(stmt_user)
+        teacher = result.scalar_one_or_none()
+
+        if not teacher:
+            raise HTTPException(
+                status_code=404,
+                detail="Teacher not found"
+            )
+
+        # Extract groups from related group_teachers
+        groups = [gt.group for gt in teacher.group_teachers if gt.group is not None]
+
+        if not groups:
+            raise HTTPException(
+                status_code=404,
+                detail="No groups found for this teacher"
+            )
+
         return groups
 
         

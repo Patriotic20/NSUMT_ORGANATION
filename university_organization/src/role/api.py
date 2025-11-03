@@ -74,3 +74,5 @@ async def delete(
     ):
     await service.delete(id=id)
     return {"message": "Role deleted successfully"}
+
+
