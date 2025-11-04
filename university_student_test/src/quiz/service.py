@@ -17,10 +17,9 @@ class QuizService:
 
     async def create_quiz(self, quiz_data: QuizCreate):
         # Convert Pydantic to dict for ORM
-        quiz_dict = quiz_data.model_dump()
 
         # 1️⃣ Create the quiz
-        created_quiz = await self.basic_service.create(model=Quiz, obj_items=quiz_dict)
+        created_quiz = await self.basic_service.create(model=Quiz, obj_items=quiz_data)
         if not created_quiz:
             raise HTTPException(status_code=500, detail="Failed to create quiz")
 
