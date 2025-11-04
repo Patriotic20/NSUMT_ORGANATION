@@ -68,7 +68,7 @@ async def get_all(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("read:questions"))
 ):
-    return current_user
+    return current_user.roles[0]
     # role = current_user.roles[0] if current_user.roles else None
 
     # return await service.get_all_question(
