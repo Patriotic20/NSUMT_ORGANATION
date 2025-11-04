@@ -51,7 +51,7 @@ async def get_by_id(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("read:questions")),
 ):
-    role = current_user.roles[0] if current_user.roles else None
+    role = current_user.role[0] if current_user.role else None
 
     return await service.get_question_by_id(
         question_id=question_id,
@@ -68,15 +68,14 @@ async def get_all(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("read:questions"))
 ):
-    return {"data": current_user}
-    # role = current_user.roles[0] if current_user.roles else None
+    role = current_user.role[0] if current_user.role else None
 
-    # return await service.get_all_question(
-    #     limit=limit,
-    #     offset=offset,
-    #     user_id=current_user.user_id,
-    #     is_admin=role
-    # )
+    return await service.get_all_question(
+        limit=limit,
+        offset=offset,
+        user_id=current_user.user_id,
+        is_admin=role
+    )
 
 
 
@@ -87,7 +86,7 @@ async def update(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("update:questions")),
 ):
-    role = current_user.roles[0] if current_user.roles else None
+    role = current_user.role[0] if current_user.role else None
 
     return await service.update_question(
         question_id=question_id,
@@ -103,7 +102,7 @@ async def delete(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("delete:questions")),
 ):
-    role = current_user.roles[0] if current_user.roles else None
+    role = current_user.role[0] if current_user.role else None
 
     return await service.delete_question(
         question_id=question_id,
