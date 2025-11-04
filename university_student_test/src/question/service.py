@@ -88,38 +88,40 @@ class QuestionService:
         return question_data
 
     async def get_all_question(
-        self,
+        self, 
         is_admin: str, 
-        user_id: int,
+        user_id: int, 
         limit: int = 20, 
         offset: int = 0
     ):
         stmt = select(Question)
-
-        # Apply condition only if user is not admin
         if is_admin != "admin":
             stmt = stmt.where(Question.user_id == user_id)
-            
-        count_stmt = stmt.with_only_columns(func.count()).order_by(None)
+
+        # Count total correctly
+        count_stmt = select(func.count(Question.id))
+        if is_admin != "admin":
+            count_stmt = count_stmt.where(Question.user_id == user_id)
+
         total_result = await self.session.execute(count_stmt)
         total = total_result.scalar_one()
-        
 
-        # Apply pagination correctly
+        # Pagination
         stmt = stmt.limit(limit).offset(offset)
-
         result = await self.session.execute(stmt)
         questions_data = result.scalars().all()
-        
+
         if not questions_data:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Questions not found"
             )
+
         return {
             "total": total,
             "data": questions_data
-        } 
+        }
+
 
 
     async def update_question(

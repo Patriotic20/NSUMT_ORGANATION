@@ -63,22 +63,28 @@ class QuizService:
             # Only show quizzes for this user if not admin
             if is_admin != "admin":
                 stmt = stmt.where(Quiz.user_id == user_id)
-                
-                
-        count_stmt = stmt.with_only_columns(func.count()).order_by(None)
-        total_count = await self.session.execute(count_stmt)
-        total = total_count.scalar_one()
+
+        # Correct total count
+        count_stmt = select(func.count(Quiz.id))
+        if group_id is not None:
+            count_stmt = count_stmt.where(Quiz.group_id == group_id)
+        elif is_admin != "admin":
+            count_stmt = count_stmt.where(Quiz.user_id == user_id)
+
+        total_result = await self.session.execute(count_stmt)
+        total = total_result.scalar_one()
+
         # Pagination
         stmt = stmt.limit(limit).offset(offset)
 
         result = await self.session.scalars(stmt)
         quiz_data = result.all()
-        
+
         return {
             "total": total,
             "data": quiz_data
-        } 
-        
+        }
+
 
 
     async def update_quiz(
