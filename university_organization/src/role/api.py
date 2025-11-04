@@ -38,6 +38,8 @@ async def assignment(
 ):
     return await service.assignment(create_data=create_data)
 
+
+
 @router.get("")
 async def get_all(
     pagination: GetAll = Depends(),

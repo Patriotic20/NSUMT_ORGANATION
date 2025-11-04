@@ -18,6 +18,8 @@ def get_question_service(session: AsyncSession = Depends(db_helper.session_gette
 
 
 
+
+
 @router.post("/create")
 async def create(
     question_data: QuestionBase,
@@ -28,6 +30,7 @@ async def create(
         user_id=current_user.user_id,
         **question_data.model_dump()
     )
+    
     return await service.create_question(question_data=create_data)
 
 
@@ -70,8 +73,8 @@ async def get_all(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("read:questions"))
 ):
-
-
+    
+    print(current_user)
     return await service.get_all_question(
         limit=limit,
         offset=offset,

@@ -33,7 +33,7 @@ class AuthService:
             data = {
                 "user_id": user_data.id,       
                 "username": user_data.username,
-                "roles": roles
+                "role": roles
             }
 
         else:
@@ -58,7 +58,7 @@ class AuthService:
                 "user_id": student_data["user_id"],
                 "username": student_data["username"],
                 "group_id": student_data["group_id"],
-                "roles": roles
+                "role": roles
             }
 
         return {
