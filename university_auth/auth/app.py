@@ -40,6 +40,7 @@ async def validate_token_subscriber(token: str) -> TokenPaylod:
     return TokenPaylod(
         valid=True,
         user_id=user.id,
+        group_id=payload.get("group_id"),
         username=user.username,
         role=user.roles[0].name if user.roles else None,
         permissions=[p.name for r in user.roles for p in r.permissions],

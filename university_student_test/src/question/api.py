@@ -16,6 +16,8 @@ router = APIRouter(
 def get_question_service(session: AsyncSession = Depends(db_helper.session_getter)):
     return QuestionService(session=session)
 
+
+
 @router.post("/create")
 async def create(
     question_data: QuestionBase,
@@ -51,12 +53,12 @@ async def get_by_id(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("read:questions")),
 ):
-    role = current_user.role[0] if current_user.role else None
+    # role = current_user.role[0] if current_user.role else None
 
     return await service.get_question_by_id(
         question_id=question_id,
         user_id=current_user.user_id,
-        role=role
+        role=current_user.role
     )
 
 
@@ -68,13 +70,13 @@ async def get_all(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("read:questions"))
 ):
-    role = current_user.role[0] if current_user.role else None
+    # role = current_user.role[0] if current_user.role else None
 
     return await service.get_all_question(
         limit=limit,
         offset=offset,
         user_id=current_user.user_id,
-        is_admin=role
+        is_admin=current_user.role
     )
 
 
