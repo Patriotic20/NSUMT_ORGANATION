@@ -35,10 +35,11 @@ async def assig(
 @router.get("")
 async def get_all(
     pagination: Annotated[GetAll, Depends()],
+    search: str | None = None,
     service: UserService = Depends(get_user_service),
     _: User = Depends(require_permission("read:user")),
 ):
-    return await service.get_all(pagination=pagination)
+    return await service.get_all(pagination=pagination, search=search)
 
 @router.get("/get/{id}")
 async def get_by_id(

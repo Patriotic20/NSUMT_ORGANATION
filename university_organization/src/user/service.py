@@ -72,9 +72,15 @@ class UserService:
 
     async def get_all(
         self,
-        pagination: GetAll
+        pagination: GetAll,
+        search: str | None = None,
     ):
-        return await self.service.get(model=User, pagination=pagination)
+        return await self.service.get(
+            model=User, 
+            pagination=pagination,
+            search=search,
+            search_fields=["username"]
+            )
 
     async def delete(self, id: int):
         await self.service.delete(model=User, filters=[User.id == id])

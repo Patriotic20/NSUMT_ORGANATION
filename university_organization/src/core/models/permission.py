@@ -8,11 +8,19 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .role import Role
+    from .role_permission_association import RolePermission
 
 
 class Permission(Base, IntIdPkMixin):
     
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    
+    
+    role_permissions: Mapped[list["RolePermission"]] = relationship(
+        "RolePermission",
+        back_populates="permission",
+        cascade="all, delete-orphan"
+    )
     
     
     roles: Mapped[list["Role"]] = relationship(
