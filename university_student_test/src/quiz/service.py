@@ -3,6 +3,7 @@ from sqlalchemy import select
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models.quiz import Quiz
+from sqlalchemy import func
 from core.utils.basic_service import BasicService
 from core.models.question_quiz import QuestionQuiz
 from core.models.questions import Question
@@ -62,12 +63,22 @@ class QuizService:
             # Only show quizzes for this user if not admin
             if is_admin != "admin":
                 stmt = stmt.where(Quiz.user_id == user_id)
-
+                
+                
+        count_stmt = stmt.with_only_columns(func.count()).order_by(None)
+        total_count = await self.session.execute(count_stmt)
+        total = total_count.scalar_one()
         # Pagination
         stmt = stmt.limit(limit).offset(offset)
 
         result = await self.session.scalars(stmt)
-        return result.all()
+        quiz_data = result.all()
+        
+        return {
+            "total": total,
+            "data": quiz_data
+        } 
+        
 
 
     async def update_quiz(

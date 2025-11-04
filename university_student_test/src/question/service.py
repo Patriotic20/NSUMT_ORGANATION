@@ -46,11 +46,11 @@ class QuestionService:
             values.append({
                 "subject_id": subject_id,
                 "user_id": user_id,
-                "text": row[0],
-                "option_a": row[1],
-                "option_b": row[2],
-                "option_c": row[3],
-                "option_d": row[4],
+                "text": str(row[0]),
+                "option_a": str(row[1]),
+                "option_b": str(row[2]),
+                "option_c": str(row[3]),
+                "option_d": str(row[4]),
             })
 
         # Bulk insert
@@ -118,7 +118,7 @@ class QuestionService:
             )
         return {
             "total": total,
-            "items": questions_data
+            "data": questions_data
         } 
 
 
