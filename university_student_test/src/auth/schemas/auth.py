@@ -66,5 +66,5 @@ class TokenPaylod(BaseModel):
     user_id: int | None = None
     group_id: int | None = None
     username: str | None = None
-    role: list[str] | None = None
+    roles: list[str] | None = None
     permissions: list[str] = Field(default_factory=list)

@@ -98,6 +98,7 @@ class QuestionService:
         # Apply condition only if user is not admin
         if is_admin != "admin":
             stmt = stmt.where(Question.user_id == user_id)
+            
 
         # Apply pagination correctly
         stmt = stmt.limit(limit).offset(offset)

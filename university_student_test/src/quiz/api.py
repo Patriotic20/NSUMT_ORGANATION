@@ -43,7 +43,7 @@ async def get_by_id(
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("read:quiz"))
 ):
-    role = current_user.role[0] if current_user.role else None
+    role = current_user.roles[0] if current_user.roles else None
     return await service.get_quiz_by_id(
         quiz_id=quiz_id,
         user_id=current_user.user_id,
@@ -58,7 +58,7 @@ async def get_all(
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("read:quiz"))
 ):
-    role = current_user.role[0] if current_user.role else None
+    role = current_user.roles[0] if current_user.roles else None
     return await service.get_all_quiz(
         user_id=current_user.user_id,
         is_admin=role,
@@ -75,7 +75,7 @@ async def update(
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("update:quiz"))
 ):
-    role = current_user.role[0] if current_user.role else None
+    role = current_user.roles[0] if current_user.roles else None
     return await service.update_quiz(
         quiz_id=quiz_id,
         user_id=current_user.user_id,
@@ -90,7 +90,7 @@ async def delete(
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("delete:quiz"))
 ):
-    role = current_user.role[0] if current_user.role else None
+    role = current_user.roles[0] if current_user.roles else None
     await service.delete_quiz(
         quiz_id=quiz_id,
         user_id=current_user.user_id,
