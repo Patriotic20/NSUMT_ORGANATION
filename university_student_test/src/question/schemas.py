@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 
 class QuestionBase(BaseModel):
+    subject_id: int
     text: str
     option_a: str | None = None
     option_b: str | None = None
@@ -11,8 +12,9 @@ class QuestionBase(BaseModel):
 
 
 class QuestionCreate(QuestionBase):
+    user_id: int
+
     
-    subject_id: int
 
 
 class QuestionResponse(QuestionCreate):
