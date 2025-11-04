@@ -74,7 +74,6 @@ async def get_all(
     current_user: TokenPaylod = Depends(require_permission("read:questions"))
 ):
     
-    print(current_user)
     return await service.get_all_question(
         limit=limit,
         offset=offset,
