@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.utils.basic_service import BasicService
 from .schemas import QuestionCreate, QuestionUpdate, QuestionBase
 from sqlalchemy import insert, select
+from sqlalchemy import func
 from openpyxl import load_workbook
 from core.models.questions import Question
 from fastapi import HTTPException, status, UploadFile
@@ -99,6 +100,10 @@ class QuestionService:
         if is_admin != "admin":
             stmt = stmt.where(Question.user_id == user_id)
             
+        count_stmt = stmt.with_only_columns(func.count()).order_by(None)
+        total_result = await self.session.execute(count_stmt)
+        total = total_result.scalar_one()
+        
 
         # Apply pagination correctly
         stmt = stmt.limit(limit).offset(offset)
@@ -111,7 +116,10 @@ class QuestionService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Questions not found"
             )
-        return questions_data
+        return {
+            "total": total,
+            "items": questions_data
+        } 
 
 
     async def update_question(
