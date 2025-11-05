@@ -37,4 +37,9 @@ class Subject(Base, IntIdPkMixin):
         "Quiz",
         back_populates="subject",
         cascade="all, delete-orphan"
-)
+    )
+    
+    results = relationship(
+        "Result",
+        back_populates="subject"
+    )
