@@ -28,6 +28,12 @@ class User(Base, IntIdPkMixin):
         back_populates="user",
         cascade="all, delete-orphan"
     )
+    
+    roles: Mapped["Role"] = relationship(
+        "Role",
+        secondary="user_roles",
+        back_populates = "users"
+    )
 
     student: Mapped["Student"] = relationship(
         "Student",

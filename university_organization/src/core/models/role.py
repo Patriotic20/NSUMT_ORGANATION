@@ -5,6 +5,7 @@ from .mixins.int_id_pk import IntIdPkMixin
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+    from .user import User
     from .role_permission_association import RolePermission
     from .user_role_association import UserRole
 
@@ -19,6 +20,13 @@ class Role(Base , IntIdPkMixin):
         "UserRole",
         back_populates="role",
         cascade="all, delete-orphan"
+    )
+    
+    
+    users: Mapped["User"] = relationship(
+        "User",
+        secondary="user_roles",
+        back_populates = "roles"
     )
     
     role_permissions: Mapped[list["RolePermission"]] = relationship(
