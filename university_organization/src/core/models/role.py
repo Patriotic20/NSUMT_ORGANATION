@@ -24,7 +24,7 @@ class Role(Base , IntIdPkMixin):
     )
     
     
-    users: Mapped["User"] = relationship(
+    users: Mapped[list["User"]] = relationship(
         "User",
         secondary="user_roles",
         back_populates = "roles"
@@ -36,7 +36,7 @@ class Role(Base , IntIdPkMixin):
         cascade="all, delete-orphan"
     )
     
-    permissions: Mapped["Permission"] = relationship(
+    permissions: Mapped[list["Permission"]] = relationship(
         "Permission",
         secondary="role_permissions",
         back_populates="roles"
