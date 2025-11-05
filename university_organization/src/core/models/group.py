@@ -10,6 +10,7 @@ if TYPE_CHECKING:
     from .student import Student
     from .group_teacher import GroupTeacher
     from .quiz import Quiz
+    from .results import Result
 
 class Group(Base, IntIdPkMixin):
     
@@ -36,6 +37,13 @@ class Group(Base, IntIdPkMixin):
     
     quizzes: Mapped[list["Quiz"]] = relationship(
         "Quiz",
+        back_populates="group",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
+    
+    results: Mapped[list["Result"]] = relationship(
+        "Result",
         back_populates="group",
         cascade="all, delete-orphan",
         passive_deletes=True
