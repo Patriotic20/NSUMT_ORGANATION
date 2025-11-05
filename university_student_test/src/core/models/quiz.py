@@ -46,7 +46,7 @@ class Quiz(Base, IntIdPkMixin):
     quiz_time: Mapped[int] = mapped_column(Integer, nullable=False)
     start_time: Mapped[datetime] = mapped_column(nullable=False)
     end_time: Mapped[datetime] = mapped_column(nullable=False)
-    quiz_pin: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
+    quiz_pin: Mapped[str] = mapped_column(String(100), nullable=False)
 
     status: Mapped["QuizStatus"] = mapped_column(
         Enum(QuizStatus, native_enum=False),
