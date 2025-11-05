@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .user import User
+    from .permission import Permission
     from .role_permission_association import RolePermission
     from .user_role_association import UserRole
 
@@ -34,6 +35,14 @@ class Role(Base , IntIdPkMixin):
         back_populates="role",
         cascade="all, delete-orphan"
     )
+    
+    permissions: Mapped["Permission"] = relationship(
+        "Permission",
+        secondary="role_permissions",
+        back_populates="roles"
+        
+    )
+    
     
 
     

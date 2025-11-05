@@ -23,3 +23,10 @@ class Permission(Base, IntIdPkMixin):
     )
     
     
+    roles: Mapped["Role"] = relationship(
+        "Role",
+        secondary="role_permissions",
+        back_populates="permissions"
+    )
+    
+    
