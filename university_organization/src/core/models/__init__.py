@@ -14,7 +14,11 @@ __all__ = [
     "RolePermission",
     "Subject",
     "GroupTeacher",
-    "SubjectTeacher"
+    "SubjectTeacher",
+    "Quiz",
+    "Question",
+    "QuestionQuiz",
+    "Result"
 ]
 
 from .base import Base
@@ -39,3 +43,8 @@ from .role_permission_association import RolePermission
 from .subject import Subject
 from .group_teacher import GroupTeacher
 from .subject_teacher_association import SubjectTeacher
+
+from .quiz import Quiz
+from .questions import Question
+from .question_quiz import QuestionQuiz
+from .results import Result
