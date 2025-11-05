@@ -3,7 +3,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .service import QuizService
 from .schemas import QuizBase, QuizUpdate, QuizCreate
-
 from auth.schemas.auth import TokenPaylod
 from auth.utils.security import require_permission
 from core.database.db_helper import db_helper
@@ -25,12 +24,12 @@ def get_quiz_service(session: AsyncSession = Depends(db_helper.session_getter)) 
 async def create(
     quiz_data: QuizBase,
     service: QuizService = Depends(get_quiz_service),
-    current_user: TokenPaylod = Depends(require_permission("create:quiz"))
+    current_user: TokenPaylod = Depends(require_permission("create:quiz")),
 ):
     """Create a new quiz."""
     quiz_create = QuizCreate(
         user_id=current_user.user_id,
-        **quiz_data.model_dump()
+        **quiz_data.model_dump(),
     )
     return await service.create_quiz(quiz_data=quiz_create)
 
@@ -46,14 +45,13 @@ async def upload_file(file: UploadFile = File(...)) -> dict[str, str]:
 async def get_by_id(
     quiz_id: int,
     service: QuizService = Depends(get_quiz_service),
-    current_user: TokenPaylod = Depends(require_permission("read:quiz"))
+    current_user: TokenPaylod = Depends(require_permission("read:quiz")),
 ):
     """Retrieve a quiz by its ID."""
-    role = current_user.role[0] if current_user.role else None
     return await service.get_quiz_by_id(
         quiz_id=quiz_id,
         user_id=current_user.user_id,
-        is_admin=role
+        is_admin=current_user.role,
     )
 
 
@@ -62,16 +60,15 @@ async def get_all(
     limit: int = 20,
     offset: int = 0,
     service: QuizService = Depends(get_quiz_service),
-    current_user: TokenPaylod = Depends(require_permission("read:quiz"))
+    current_user: TokenPaylod = Depends(require_permission("read:quiz")),
 ):
     """Retrieve all quizzes with pagination."""
-    role = current_user.role[0] if current_user.role else None
     return await service.get_all_quiz(
         user_id=current_user.user_id,
-        is_admin=role,
+        is_admin=current_user.role,
         limit=limit,
         offset=offset,
-        group_id=current_user.group_id
+        group_id=current_user.group_id,
     )
 
 
@@ -80,15 +77,14 @@ async def update(
     quiz_id: int,
     quiz_data: QuizUpdate,
     service: QuizService = Depends(get_quiz_service),
-    current_user: TokenPaylod = Depends(require_permission("update:quiz"))
+    current_user: TokenPaylod = Depends(require_permission("update:quiz")),
 ):
     """Update an existing quiz."""
-    role = current_user.role[0] if current_user.role else None
     return await service.update_quiz(
         quiz_id=quiz_id,
         user_id=current_user.user_id,
         quiz_data=quiz_data,
-        is_admin=role
+        is_admin=current_user.role,
     )
 
 
@@ -96,13 +92,12 @@ async def update(
 async def delete(
     quiz_id: int,
     service: QuizService = Depends(get_quiz_service),
-    current_user: TokenPaylod = Depends(require_permission("delete:quiz"))
+    current_user: TokenPaylod = Depends(require_permission("delete:quiz")),
 ) -> dict[str, str]:
     """Delete a quiz by ID."""
-    role = current_user.role[0] if current_user.role else None
     await service.delete_quiz(
         quiz_id=quiz_id,
         user_id=current_user.user_id,
-        is_admin=role
+        is_admin=current_user.role,
     )
     return {"message": "Deleted successfully"}

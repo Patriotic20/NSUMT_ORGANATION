@@ -1,11 +1,11 @@
-from fastapi import APIRouter , Depends , UploadFile , File
+from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .service import QuestionService, QuestionUpdate , QuestionBase
-from core.database.db_helper import db_helper
-from auth.utils.security import require_permission 
-from auth.schemas.auth import TokenPaylod
+from .service import QuestionService, QuestionUpdate, QuestionBase
 from .schemas import QuestionCreate
+from auth.schemas.auth import TokenPaylod
+from auth.utils.security import require_permission
+from core.database.db_helper import db_helper
 
 
 router = APIRouter(
@@ -13,11 +13,10 @@ router = APIRouter(
     prefix="/questions"
 )
 
-def get_question_service(session: AsyncSession = Depends(db_helper.session_getter)):
+
+def get_question_service(session: AsyncSession = Depends(db_helper.session_getter)) -> QuestionService:
+    """Dependency to provide QuestionService instance."""
     return QuestionService(session=session)
-
-
-
 
 
 @router.post("/create")
@@ -26,28 +25,27 @@ async def create(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("create:questions")),
 ):
+    """Create a new question."""
     create_data = QuestionCreate(
         user_id=current_user.user_id,
         **question_data.model_dump()
     )
-    
     return await service.create_question(question_data=create_data)
 
 
-
-@router.post("/create/exel")
-async def create_by_exel(
+@router.post("/create/excel")
+async def create_by_excel(
     subject_id: int,
     file: UploadFile = File(...),
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("create:questions")),
 ):
+    """Create questions from an Excel file."""
     return await service.create_question_by_exel(
         subject_id=subject_id,
         file=file,
         user_id=current_user.user_id
     )
-
 
 
 @router.get("/get/{question_id}")
@@ -56,8 +54,7 @@ async def get_by_id(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("read:questions")),
 ):
-
-
+    """Retrieve a question by its ID."""
     return await service.get_question_by_id(
         question_id=question_id,
         user_id=current_user.user_id,
@@ -65,22 +62,20 @@ async def get_by_id(
     )
 
 
-
 @router.get("")
 async def get_all(
     limit: int = 20,
     offset: int = 0,
     service: QuestionService = Depends(get_question_service),
-    current_user: TokenPaylod = Depends(require_permission("read:questions"))
+    current_user: TokenPaylod = Depends(require_permission("read:questions")),
 ):
-    
+    """Retrieve all questions with pagination."""
     return await service.get_all_question(
         limit=limit,
         offset=offset,
         user_id=current_user.user_id,
         is_admin=current_user.role
     )
-
 
 
 @router.put("/update/{question_id}")
@@ -90,13 +85,12 @@ async def update(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("update:questions")),
 ):
-    role = current_user.role[0] if current_user.role else None
-
+    """Update an existing question."""
     return await service.update_question(
         question_id=question_id,
         question_data=question_data,
         user_id=current_user.user_id,
-        is_admin=role
+        is_admin=current_user.role
     )
 
 
@@ -106,12 +100,9 @@ async def delete(
     service: QuestionService = Depends(get_question_service),
     current_user: TokenPaylod = Depends(require_permission("delete:questions")),
 ):
-    role = current_user.role[0] if current_user.role else None
-
+    """Delete a question by ID."""
     return await service.delete_question(
         question_id=question_id,
         user_id=current_user.user_id,
-        is_admin=role
+        is_admin=current_user.role
     )
-
-

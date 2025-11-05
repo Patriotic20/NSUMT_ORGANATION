@@ -5,6 +5,12 @@ from fastapi import HTTPException, status
 class LoginRequest(BaseModel):
     username: str 
     password: str 
+    
+    
+    @field_validator("*", mode="after")
+    @classmethod
+    def normalize(cls, value: str) -> str:
+        return value.strip()
 
 
 class RefreshToken(BaseModel):

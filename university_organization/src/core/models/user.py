@@ -9,6 +9,7 @@ if TYPE_CHECKING:
     from .teacher import Teacher
     from .worker import Worker
     from .role import Role
+    from .user_role_association import UserRole
 
 
 class User(Base , IntIdPkMixin):
@@ -21,6 +22,13 @@ class User(Base , IntIdPkMixin):
         "Role",
         secondary="user_roles",
         back_populates="users"
+    )
+    
+    
+    user_roles: Mapped[list["UserRole"]] = relationship(
+        "UserRole",
+        back_populates="user",
+        cascade="all, delete-orphan"
     )
     
     student: Mapped["Student"] = relationship(

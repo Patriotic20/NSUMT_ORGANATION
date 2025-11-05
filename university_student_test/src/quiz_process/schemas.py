@@ -13,9 +13,11 @@ class QuizSubmission(BaseModel):
     
 
 class ResultCreate(BaseModel):
+    teacher_id: int
     student_id: int
+    group_id: int
+    subject_id: int
     quiz_id: int
     correct_answers: int
     incorrect_answers: int
     grade: float
-    

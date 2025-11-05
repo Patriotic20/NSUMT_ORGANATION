@@ -8,6 +8,7 @@ if TYPE_CHECKING:
     from .user import User
     from .permission import Permission
     from .role_permission_association import RolePermission
+    from .user_role_association import UserRole
 
 
 
@@ -15,6 +16,14 @@ class Role(Base , IntIdPkMixin):
     
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
     
+    
+    
+    
+    user_roles: Mapped[list["UserRole"]] = relationship(
+        "UserRole",
+        back_populates="role",
+        cascade="all, delete-orphan"
+    )
     
     users: Mapped[list["User"]] = relationship(
         "User",

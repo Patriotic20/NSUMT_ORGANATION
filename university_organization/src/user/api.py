@@ -24,12 +24,7 @@ def get_user_service(session: AsyncSession = Depends(db_helper.session_getter)):
 
 
 
-@router.post("/assig_role_to_user")
-async def assig(
-    create_data: UserRoleCreate,
-    service: UserService = Depends(get_user_service),
-):
-    return await service.assig(user_role_create=create_data)
+
 
 
 @router.get("")

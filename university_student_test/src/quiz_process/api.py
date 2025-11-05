@@ -3,14 +3,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .service import QuizProcessService
 from .schemas import QuizSubmission
-
 from core.database.db_helper import db_helper
-
 from auth.schemas.auth import TokenPaylod
 from auth.utils.security import require_permission
-
-
-
 
 
 router = APIRouter(
@@ -18,25 +13,38 @@ router = APIRouter(
     prefix="/quiz_process"
 )
 
-def get_quiz_process_service(session: AsyncSession = Depends(db_helper.session_getter)):
+
+def get_quiz_process_service(
+    session: AsyncSession = Depends(db_helper.session_getter),
+) -> QuizProcessService:
+    """Dependency to provide QuizProcessService."""
     return QuizProcessService(session=session)
 
 
-
-@router.get('/get/test')
-async def get_test(
+@router.get("/start")
+async def start_quiz(
     quiz_id: int,
     quiz_pin: str,
     service: QuizProcessService = Depends(get_quiz_process_service),
-    _ : TokenPaylod = Depends(require_permission("read:quiz_process"))
+    current_user: TokenPaylod = Depends(require_permission("read:quiz_process")),
 ):
-    return await service.create_questions(quiz_id=quiz_id, quiz_pin=quiz_pin)
+    """Start a quiz for a user if it's active."""
+    return await service.start_quiz(
+        quiz_id=quiz_id,
+        quiz_pin=quiz_pin,
+        group_id=current_user.group_id,
+    )
 
 
-@router.post("/test_results")
-async def check_result(
-    questions: QuizSubmission,
+@router.post("/end")
+async def end_quiz(
+    submission: QuizSubmission,
     service: QuizProcessService = Depends(get_quiz_process_service),
-    current_user: TokenPaylod = Depends(require_permission("create:quiz_process"))
+    current_user: TokenPaylod = Depends(require_permission("create:quiz_process")),
 ):
-    return await service.take_questions(submitted_questions=questions, student_id=current_user.user_id)
+    """Submit quiz answers and calculate results."""
+    return await service.end_quiz(
+        submission=submission,
+        group_id=current_user.group_id,
+        student_id=current_user.user_id,
+    )

@@ -31,14 +31,6 @@ async def create(
     ):
     return await service.create(create_data=create_data)
 
-@router.post("/assignment")
-async def assignment(
-    create_data: RolePermission = Depends(),
-    service: RoleService = Depends(get_role_service),
-):
-    return await service.assignment(create_data=create_data)
-
-
 
 @router.get("")
 async def get_all(

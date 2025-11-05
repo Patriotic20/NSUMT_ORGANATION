@@ -87,5 +87,3 @@ class UserService:
         return {"message": "User delete successfully"}
 
     
-    async def assig(self, user_role_create: UserRoleCreate):
-        return await self.service.create(model=UserRole, create_data=user_role_create)

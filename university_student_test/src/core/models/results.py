@@ -15,6 +15,7 @@ class Result(Base, IntIdPkMixin):
     student_id: Mapped[int] = mapped_column(nullable=False)
     teacher_id: Mapped[int] = mapped_column(nullable=False)
     group_id: Mapped[int] = mapped_column(nullable=False)
+    subject_id: Mapped[int] = mapped_column(nullable=False)
     quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False)
 
     correct_answers: Mapped[int] = mapped_column(Integer, nullable=False)
