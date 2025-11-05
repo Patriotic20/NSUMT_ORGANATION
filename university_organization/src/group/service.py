@@ -4,7 +4,6 @@ from .schemas import (
     GroupCreate,
     GroupUpdate,
     GroupGet,
-    AssignData
 )
 
 from core.utils.service import BasicService
@@ -44,7 +43,6 @@ class GroupService:
             model=Group,
             filters=[
                 Group.id == group_get.id,
-                Group.faculty_id == group_get.faculty_id
                 ],
             single=True
             )
@@ -54,7 +52,6 @@ class GroupService:
             model=Group,
             filters=[
                 Group.id == group_get.id,
-                Group.faculty_id == group_get.faculty_id
                 ],
             unique_filters=[Group.name == update_data.name],
             update_data=update_data
@@ -66,7 +63,6 @@ class GroupService:
             model=Group,
             filters=[
                 Group.id == group_get.id,
-                Group.faculty_id == group_get.faculty_id
             ]
             )
         return {"message": "Group delete successfully"}

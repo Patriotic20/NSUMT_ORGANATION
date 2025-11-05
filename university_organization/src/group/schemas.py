@@ -38,7 +38,3 @@ class GroupGet(BaseModel):
     id: int = Field(..., gt=0, description="Unique identifier of the group, must be > 0")
     faculty_id: int | None = Field(None, description="Optional faculty ID associated with the group")
 
-
-class AssignData(BaseModel):
-    group_id: int
-    teacher_id: int
