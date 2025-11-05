@@ -22,11 +22,6 @@ class User(Base, IntIdPkMixin):
     username: Mapped[str] = mapped_column(nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
 
-    roles: Mapped[list["Role"]] = relationship(
-        "Role",
-        secondary="user_roles",
-        back_populates="users"
-    )
 
     user_roles: Mapped[list["UserRole"]] = relationship(
         "UserRole",
