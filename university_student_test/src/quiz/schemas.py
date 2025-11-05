@@ -51,6 +51,8 @@ class QuizCreate(QuizBase):
     
     user_id: int
 
+class QuizInsert(QuizCreate):
+    end_time: datetime
 
 # class QuizResponse(QuizBase):
 #     id: int

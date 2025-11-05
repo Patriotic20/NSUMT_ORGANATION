@@ -1,20 +1,23 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from .service import QuizService 
+from .service import QuizService
 from .schemas import QuizBase, QuizUpdate, QuizCreate
 
-from core.database.db_helper import db_helper 
 from auth.schemas.auth import TokenPaylod
 from auth.utils.security import require_permission
+from core.database.db_helper import db_helper
 from core.utils.save_file import save_file
+
 
 router = APIRouter(
     tags=["Quiz"],
     prefix="/quiz"
 )
 
-def get_quiz_service(session: AsyncSession = Depends(db_helper.session_getter)):
+
+def get_quiz_service(session: AsyncSession = Depends(db_helper.session_getter)) -> QuizService:
+    """Dependency to provide QuizService instance."""
     return QuizService(session=session)
 
 
@@ -24,6 +27,7 @@ async def create(
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("create:quiz"))
 ):
+    """Create a new quiz."""
     quiz_create = QuizCreate(
         user_id=current_user.user_id,
         **quiz_data.model_dump()
@@ -32,7 +36,8 @@ async def create(
 
 
 @router.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(file: UploadFile = File(...)) -> dict[str, str]:
+    """Upload a file and return its URL."""
     url_data = save_file(file=file)
     return {"file_url": url_data}
 
@@ -43,6 +48,7 @@ async def get_by_id(
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("read:quiz"))
 ):
+    """Retrieve a quiz by its ID."""
     role = current_user.role[0] if current_user.role else None
     return await service.get_quiz_by_id(
         quiz_id=quiz_id,
@@ -58,6 +64,7 @@ async def get_all(
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("read:quiz"))
 ):
+    """Retrieve all quizzes with pagination."""
     role = current_user.role[0] if current_user.role else None
     return await service.get_all_quiz(
         user_id=current_user.user_id,
@@ -75,6 +82,7 @@ async def update(
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("update:quiz"))
 ):
+    """Update an existing quiz."""
     role = current_user.role[0] if current_user.role else None
     return await service.update_quiz(
         quiz_id=quiz_id,
@@ -89,7 +97,8 @@ async def delete(
     quiz_id: int,
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("delete:quiz"))
-):
+) -> dict[str, str]:
+    """Delete a quiz by ID."""
     role = current_user.role[0] if current_user.role else None
     await service.delete_quiz(
         quiz_id=quiz_id,
