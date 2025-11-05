@@ -28,6 +28,8 @@ class Result(Base, IntIdPkMixin):
     grade: Mapped[float] = mapped_column(Float, nullable=False)
 
     # --- Relationships ---
+    
+
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="results")
     student: Mapped["User"] = relationship(
         "User",
