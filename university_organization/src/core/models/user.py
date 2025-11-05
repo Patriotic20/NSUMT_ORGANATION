@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 class User(Base, IntIdPkMixin):
     __tablename__ = "users"
 
-    username: Mapped[str] = mapped_column(nullable=False, unique=True)
+    username: Mapped[str] = mapped_column(nullable=False)
     password: Mapped[str] = mapped_column(nullable=False)
 
     roles: Mapped[list["Role"]] = relationship(
