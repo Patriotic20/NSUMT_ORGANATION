@@ -6,7 +6,6 @@ from .schemas import (
     GroupUpdate,
     GroupResponse,
     GroupGet,
-    AssignData
 )
 from .service import GroupService 
 
