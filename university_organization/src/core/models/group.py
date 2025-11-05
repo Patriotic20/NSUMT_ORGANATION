@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .results import Result
 
 class Group(Base, IntIdPkMixin):
+    __tablename__ = "groups"
     
     faculty_id: Mapped[int] = mapped_column(ForeignKey("facultys.id" , ondelete="CASCADE"))
     
