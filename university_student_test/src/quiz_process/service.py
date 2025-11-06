@@ -89,8 +89,8 @@ class QuizProcessService:
         # Time validation
         tz = ZoneInfo("Asia/Tashkent")
         now = datetime.now(tz)
-        start_time = quiz.start_time.replace(tz)
-        end_time = quiz.end_time.replace(tz)
+        start_time = quiz.start_time.replace(tzinfo=tz)
+        end_time = quiz.end_time.replace(tzinfo=tz)
         print(now)
         print(start_time)
         print(end_time)
