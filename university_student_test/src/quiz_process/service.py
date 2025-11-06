@@ -47,8 +47,7 @@ class QuizProcessService:
         student_result = await self.session.execute(student_stmt)
         student_info: User | None = student_result.scalars().first()
         
-        if 
-        
+
         if not student_info or not student_info.student:
             return None  
 
