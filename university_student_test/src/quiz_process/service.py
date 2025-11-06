@@ -111,8 +111,8 @@ class QuizProcessService:
         stmt_questions = (
             select(Question)
             .where(
-                Question.user_id == quiz.user_id,
-                Question.subject_id == quiz.subject_id,
+                Question.user_id == quiz.user.id,
+                Question.subject_id == quiz.subject.id,
             )
             .order_by(func.random())
             .limit(quiz.question_number)
