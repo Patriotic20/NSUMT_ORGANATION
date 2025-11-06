@@ -145,7 +145,7 @@ class QuizProcessService:
 
     
 
-    async def end_quiz(self, submission: QuizSubmission, student_id: int, group_id: int):
+    async def end_quiz(self, submission: QuizSubmission, student_id: int):
         """Process quiz submission, calculate score, and save result."""
 
         # Fetch quiz
@@ -208,7 +208,7 @@ class QuizProcessService:
             student_id=student_id,
             teacher_id=quiz_data.user_id,
             subject_id=quiz_data.subject_id,
-            group_id=group_id,
+            group_id=quiz_data.group_id,
             quiz_id=submission.quiz_id,
             grade=grade,
             correct_answers=correct_count,

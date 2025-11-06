@@ -47,6 +47,5 @@ async def end_quiz(
     """Submit quiz answers and calculate results."""
     return await service.end_quiz(
         submission=submission,
-        group_id=current_user.group_id,
         student_id=current_user.user_id,
     )
