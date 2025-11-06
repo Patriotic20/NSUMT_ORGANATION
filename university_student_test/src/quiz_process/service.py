@@ -50,7 +50,10 @@ class QuizProcessService:
         quiz: Quiz | None = result.scalars().first()
 
         if not quiz:
-            return None
+            return HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Peroblem here"
+            )
 
         # Check quiz status
         if quiz.current_status == QuizStatus.NOT_STARTED:
@@ -86,7 +89,7 @@ class QuizProcessService:
         teacher_first_name = getattr(teacher, "first_name", None)
         teacher_last_name = getattr(teacher, "last_name", None)
         group_id = getattr(group, "id", None)
-        group_name = getattr(group, "group_name", None)
+        group_name = getattr(group, "name", None)
         subject_id = getattr(subject, "id", None)
         subject_name = getattr(subject, "name", None)
 
