@@ -1,8 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select , func
 from fastapi import HTTPException, status
+from sqlalchemy.orm import selectinload
 
 from .schemas import ResultCreate , QuizSubmission
+from core.models.user import User
 
 from core.utils.basic_service import BasicService
 from core.models import Quiz , Question , Result
@@ -14,27 +16,35 @@ class QuizProcessService:
         self.session = session
         self.service = BasicService
 
-
     async def start_quiz(
-        self, 
-        quiz_id: int, 
+        self,
+        quiz_id: int,
         quiz_pin: str,
         group_id: int,
-    ) -> list[dict] | None:
+    ) -> dict | None:
         """
         Fetch quiz questions for a given quiz ID, PIN, and group.
 
         Raises:
             HTTPException: If quiz is not started or already finished.
-        
+
         Returns:
-            List of question dictionaries with randomized options.
+            Dictionary containing quiz info and randomized question data.
         """
-        # Fetch quiz by ID, PIN, and group
-        stmt = select(Quiz).where(
-            Quiz.id == quiz_id,
-            Quiz.quiz_pin == quiz_pin,
-            Quiz.group_id == group_id,
+
+        # Fetch quiz with related data
+        stmt = (
+            select(Quiz)
+            .where(
+                Quiz.id == quiz_id,
+                Quiz.quiz_pin == quiz_pin,
+                Quiz.group_id == group_id,
+            )
+            .options(
+                selectinload(Quiz.user).selectinload(User.teacher),
+                selectinload(Quiz.group),
+                selectinload(Quiz.subject),
+            )
         )
         result = await self.session.execute(stmt)
         quiz: Quiz | None = result.scalars().first()
@@ -55,7 +65,7 @@ class QuizProcessService:
                 detail="Test has already finished.",
             )
 
-        # Fetch random questions for this quiz
+        # Fetch random questions
         stmt_questions = (
             select(Question)
             .where(
@@ -68,9 +78,31 @@ class QuizProcessService:
         result = await self.session.execute(stmt_questions)
         questions = result.scalars().all()
 
-        # Return as list of dicts with randomized options
-        return [q.to_dict(randomize_options=True) for q in questions]
-    
+        # Prepare related info
+        teacher = getattr(quiz.user, "teacher", None)
+        group = getattr(quiz, "group", None)
+        subject = getattr(quiz, "subject", None)
+
+        teacher_first_name = getattr(teacher, "first_name", None)
+        teacher_last_name = getattr(teacher, "last_name", None)
+        group_id = getattr(group, "id", None)
+        group_name = getattr(group, "group_name", None)
+        subject_id = getattr(subject, "id", None)
+        subject_name = getattr(subject, "name", None)
+
+        # Convert questions to dicts with randomized options
+        data = [q.to_dict(randomize_options=True) for q in questions]
+
+        return {
+            "user_id": quiz.user_id,
+            "teacher_first_name": teacher_first_name,
+            "teacher_last_name": teacher_last_name,
+            "group_id": group_id,
+            "group_name": group_name,
+            "subject_id": subject_id,
+            "subject_name": subject_name,
+            "questions": data,
+        }
     
 
     async def end_quiz(self, submission: QuizSubmission, student_id: int, group_id: int):

@@ -3,10 +3,12 @@ from datetime import timedelta
 from fastapi import HTTPException, status
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from core.models.quiz import Quiz
 from core.models.question_quiz import QuestionQuiz
 from core.models.questions import Question
+from core.models.user import User
 from core.utils.basic_service import BasicService
 from .schemas import QuizCreate, QuizUpdate, QuizInsert
 
@@ -39,16 +41,28 @@ class QuizService:
 
         return created_quiz
 
+
+
     async def get_quiz_by_id(
         self,
         quiz_id: int,
         user_id: int,
-        is_admin: str | None = None
-    ):
-        """Get a quiz by ID, checking access permissions."""
-        stmt = select(Quiz).where(Quiz.id == quiz_id)
+        is_admin: str | None = None,
+    ) -> dict:
+        """Get a quiz by ID with related teacher, group, and subject info."""
+
+        stmt = (
+            select(Quiz)
+            .where(Quiz.id == quiz_id)
+            .options(
+                selectinload(Quiz.user).selectinload(User.teacher),
+                selectinload(Quiz.group),
+                selectinload(Quiz.subject),
+            )
+        )
+
         result = await self.session.execute(stmt)
-        quiz = result.scalar_one_or_none()
+        quiz: Quiz = result.scalar_one_or_none()
 
         if not quiz:
             raise HTTPException(
@@ -56,13 +70,44 @@ class QuizService:
                 detail="Quiz not found"
             )
 
+        # Access control
         if is_admin != "admin" and quiz.user_id != user_id:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Access denied"
             )
 
-        return quiz
+        # Safely get related data
+        teacher = getattr(quiz.user, "teacher", None)
+        group = getattr(quiz, "group", None)
+        subject = getattr(quiz, "subject", None)
+
+        teacher_first_name = getattr(teacher, "first_name", None)
+        teacher_last_name = getattr(teacher, "last_name", None)
+        group_id = getattr(group, "id", None)
+        group_name = getattr(group, "name", None)
+        subject_id = getattr(subject, "id", None)
+        subject_name = getattr(subject, "name", None)
+
+        # Return structured data
+        return {
+            "quiz_id": quiz.id,
+            "quiz_pin": quiz.quiz_pin,
+            "user_id": quiz.user_id,
+            "teacher_first_name": teacher_first_name,
+            "teacher_last_name": teacher_last_name,
+            "group_id": group_id,
+            "group_name": group_name,
+            "subject_id": subject_id,
+            "subject_name": subject_name,
+            "quiz_name": quiz.quiz_name,
+            "question_number": quiz.question_number,
+            "duration": quiz.quiz_time,
+            "start_time": quiz.start_time,
+            "end_time": quiz.end_time,
+            "current_status": quiz.status,
+        }
+
 
     async def get_all_quiz(
         self,
@@ -70,16 +115,27 @@ class QuizService:
         is_admin: str | None = None,
         limit: int = 20,
         offset: int = 0,
-        group_id: int | None = None
-    ):
-        """Retrieve all quizzes, with filters and pagination."""
-        stmt = select(Quiz)
+        group_id: int | None = None,
+    ) -> dict:
+        """Retrieve all quizzes with filters and pagination."""
 
+        # Base query with relationships
+        stmt = (
+            select(Quiz)
+            .options(
+                selectinload(Quiz.user).selectinload(User.teacher),
+                selectinload(Quiz.group),
+                selectinload(Quiz.subject),
+            )
+        )
+
+        # Apply filters
         if group_id is not None:
             stmt = stmt.where(Quiz.group_id == group_id)
         elif is_admin != "admin":
             stmt = stmt.where(Quiz.user_id == user_id)
 
+        # Total count (for pagination)
         count_stmt = select(func.count(Quiz.id))
         if group_id is not None:
             count_stmt = count_stmt.where(Quiz.group_id == group_id)
@@ -89,13 +145,42 @@ class QuizService:
         total_result = await self.session.execute(count_stmt)
         total = total_result.scalar_one()
 
+        # Pagination
         stmt = stmt.limit(limit).offset(offset)
-        result = await self.session.scalars(stmt)
-        quiz_data = result.all()
+        result = await self.session.execute(stmt)
+        quizzes = result.scalars().all()
+
+        # Format data
+        data = []
+        for quiz in quizzes:
+            teacher = getattr(quiz.user, "teacher", None)
+            group = getattr(quiz, "group", None)
+            subject = getattr(quiz, "subject", None)
+
+            data.append({
+                "quiz_id": quiz.id,
+                "quiz_name": quiz.quiz_name,
+                "quiz_pin": quiz.quiz_pin,
+                "user_id": quiz.user_id,
+                "teacher_first_name": getattr(teacher, "first_name", None),
+                "teacher_last_name": getattr(teacher, "last_name", None),
+                "group_id": getattr(group, "id", None),
+                "group_name": getattr(group, "name", None),
+                "subject_id": getattr(subject, "id", None),
+                "subject_name": getattr(subject, "name", None),
+                "question_number": quiz.question_number,
+                "duration": quiz.quiz_time,
+                "start_time": quiz.start_time,
+                "end_time": quiz.end_time,
+                "current_status": quiz.status,
+                "created_at": quiz.created_at,
+            })
 
         return {
             "total": total,
-            "data": quiz_data
+            "limit": limit,
+            "offset": offset,
+            "data": data,
         }
 
     async def update_quiz(
