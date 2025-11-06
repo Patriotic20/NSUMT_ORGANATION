@@ -10,6 +10,7 @@ from core.utils.basic_service import BasicService
 from core.models import Quiz , Question , Result
 from core.models.quiz import QuizStatus
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 
 class QuizProcessService:
@@ -74,8 +75,9 @@ class QuizProcessService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Peroblem here"
             )
+        tz = ZoneInfo("Asia/Tashkent")
         
-        now_time = datetime.now(timezone.utc).replace(microsecond=0)
+        now_time = datetime.now(tz).replace(microsecond=0)
         print(now_time)
 
         # Check quiz status
