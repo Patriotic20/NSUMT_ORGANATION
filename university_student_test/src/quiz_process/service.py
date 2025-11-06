@@ -75,21 +75,16 @@ class QuizProcessService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Peroblem here"
             )
-        tz = ZoneInfo("Asia/Tashkent")
-        
-        now_time = datetime.now(tz).replace(microsecond=0)
-        print(now_time)
-
-        # Check quiz status
-        if quiz.start_time > now_time:
+            
+        if quiz.status == QuizStatus.NOT_STARTED:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,  # changed from 405 to 403
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="Test has not started yet.",
             )
-
-        if quiz.end_time < now_time:
+            
+        elif quiz.status == QuizStatus.FINISHED:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,  # changed from 405 to 403
+                status_code=status.HTTP_403_FORBIDDEN,
                 detail="Test has already finished.",
             )
 
