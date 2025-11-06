@@ -40,12 +40,15 @@ class QuizProcessService:
             select(User)
             .where(User.id == user_id)
             .options(
-                selectinload(User.student)
+                selectinload(User.student),
+                selectinload(User.roles)
             )
         )
         student_result = await self.session.execute(student_stmt)
         student_info: User | None = student_result.scalars().first()
-
+        
+        if 
+        
         if not student_info or not student_info.student:
             return None  
 
@@ -74,6 +77,7 @@ class QuizProcessService:
             )
         
         now_time = datetime.now().replace(microsecond=0)
+        print(now_time)
 
         # Check quiz status
         if quiz.start_time > now_time:
