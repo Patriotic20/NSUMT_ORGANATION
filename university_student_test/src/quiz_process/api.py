@@ -32,7 +32,7 @@ async def start_quiz(
     return await service.start_quiz(
         quiz_id=quiz_id,
         quiz_pin=quiz_pin,
-        group_id=current_user.group_id,
+        user_id=current_user.user_id,
     )
 
 

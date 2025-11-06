@@ -20,6 +20,7 @@ class QuizProcessService:
         self,
         quiz_id: int,
         quiz_pin: str,
+        user_id: int
     ) -> dict | None:
         """
         Fetch quiz questions for a given quiz ID, PIN, and group.
@@ -33,14 +34,27 @@ class QuizProcessService:
 
         # Fetch quiz with related data
         
-        student_data = select()
+# Fetch the student data
+        student_stmt = (
+            select(User)
+            .where(User.id == user_id)
+            .options(
+                selectinload(User.student)
+            )
+        )
+        student_result = await self.session.execute(student_stmt)
+        student_info: User | None = student_result.scalars().first()
 
-        stmt = (
+        if not student_info or not student_info.student:
+            return None  
+
+        # Fetch the quiz data
+        quiz_stmt = (
             select(Quiz)
             .where(
                 Quiz.id == quiz_id,
                 Quiz.quiz_pin == quiz_pin,
-                Quiz.group_id == group_id,
+                Quiz.group_id == student_info.student.group_id,
             )
             .options(
                 selectinload(Quiz.user).selectinload(User.teacher),
@@ -48,8 +62,9 @@ class QuizProcessService:
                 selectinload(Quiz.subject),
             )
         )
-        result = await self.session.execute(stmt)
-        quiz: Quiz | None = result.scalars().first()
+        quiz_result = await self.session.execute(quiz_stmt)
+        quiz: Quiz | None = quiz_result.scalars().first()
+
 
         if not quiz:
             return HTTPException(
