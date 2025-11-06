@@ -191,7 +191,7 @@ class QuizProcessService:
                 incorrect_count += 1
 
         total = correct_count + incorrect_count
-        percentage = (100 * correct_count / total) if total else 0
+        percentage = (100 * correct_count / quiz_data.question_number) if quiz_data.question_number else 0
 
         # Grade logic
         if percentage >= 86:
