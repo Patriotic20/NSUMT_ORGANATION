@@ -33,7 +33,8 @@ async def get_current_user(
             rpc=True,
             rpc_timeout=5,
         )
-
+        
+    print(response)
     payload = TokenPaylod(**response)
 
     if not payload.valid:
