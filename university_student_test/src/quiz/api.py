@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .service import QuizService
-from .schemas import QuizBase, QuizUpdate, QuizCreate
+from .schemas import QuizBase, QuizUpdate
 from auth.schemas.auth import TokenPaylod
 from auth.utils.security import require_permission
 from core.database.db_helper import db_helper
@@ -27,11 +27,7 @@ async def create(
     current_user: TokenPaylod = Depends(require_permission("create:quiz")),
 ):
     """Create a new quiz."""
-    quiz_create = QuizCreate(
-        user_id=current_user.user_id,
-        **quiz_data.model_dump(),
-    )
-    return await service.create_quiz(quiz_data=quiz_create)
+    return await service.create_quiz(quiz_data=quiz_data)
 
 
 @router.post("/upload")

@@ -10,6 +10,7 @@ DEFAULT_START_TIME = datetime(1970, 1, 1, 0, 0, 0)
 class QuizBase(BaseModel):
     group_id: int
     subject_id: int
+    user_id: int
     
     quiz_name: str
     question_number: int
@@ -47,11 +48,10 @@ class QuizBase(BaseModel):
 
 
 
-class QuizCreate(QuizBase):
-    
-    user_id: int
 
-class QuizInsert(QuizCreate):
+
+
+class QuizInsert(QuizBase):
     end_time: datetime
 
 # class QuizResponse(QuizBase):
