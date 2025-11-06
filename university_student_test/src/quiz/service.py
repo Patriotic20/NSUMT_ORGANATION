@@ -173,7 +173,6 @@ class QuizService:
                 "start_time": quiz.start_time,
                 "end_time": quiz.end_time,
                 "current_status": quiz.status,
-                "created_at": quiz.created_at,
             })
 
         return {
