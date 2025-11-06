@@ -91,6 +91,9 @@ class QuizProcessService:
         now = datetime.now(tz)
         start_time = quiz.start_time.astimezone(tz)
         end_time = quiz.end_time.astimezone(tz)
+        print(now)
+        print(start_time)
+        print(end_time)
 
         if now < start_time:
             raise HTTPException(
