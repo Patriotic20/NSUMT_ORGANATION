@@ -38,7 +38,7 @@ class QuizProcessService:
             .where(
                 Quiz.id == quiz_id,
                 Quiz.quiz_pin == quiz_pin,
-                Quiz.group_id == group_id,
+                # Quiz.group_id == group_id,
             )
             .options(
                 selectinload(Quiz.user).selectinload(User.teacher),
