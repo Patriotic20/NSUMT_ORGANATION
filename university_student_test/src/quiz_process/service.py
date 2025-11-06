@@ -76,13 +76,24 @@ class QuizProcessService:
                 detail="Peroblem here"
             )
             
-        if quiz.status == QuizStatus.NOT_STARTED:
+        tz = ZoneInfo("Asia/Tashkent")
+        now = datetime.now(tz=tz).replace(microsecond=0)
+        
+
+        
+        start_time = quiz.start_time.replace(tzinfo=tz)
+        end_time = quiz.end_time.replace(tzinfo=tz)
+        print(now)
+        print(start_time)
+        print(end_time)    
+            
+        if now < start_time:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Test has not started yet.",
             )
             
-        elif quiz.status == QuizStatus.FINISHED:
+        elif now > end_time:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Test has already finished.",
