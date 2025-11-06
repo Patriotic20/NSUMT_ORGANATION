@@ -10,7 +10,7 @@ from core.models.question_quiz import QuestionQuiz
 from core.models.questions import Question
 from core.models.user import User
 from core.utils.basic_service import BasicService
-from .schemas import QuizCreate, QuizUpdate, QuizInsert
+from .schemas import QuizUpdate, QuizInsert, QuizBase
 
 
 class QuizService:
@@ -18,7 +18,7 @@ class QuizService:
         self.session = session
         self.basic_service = BasicService(session)
 
-    async def create_quiz(self, quiz_data: QuizCreate):
+    async def create_quiz(self, quiz_data: QuizBase):
         """Create a new quiz with calculated end time."""
         end_time = quiz_data.start_time + timedelta(minutes=quiz_data.quiz_time)
 
