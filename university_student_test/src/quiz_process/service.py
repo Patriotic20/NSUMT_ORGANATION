@@ -9,6 +9,7 @@ from core.models.user import User
 from core.utils.basic_service import BasicService
 from core.models import Quiz , Question , Result
 from core.models.quiz import QuizStatus
+from datetime import datetime
 
 
 class QuizProcessService:
@@ -71,17 +72,19 @@ class QuizProcessService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Peroblem here"
             )
+        
+        now_time = datetime.now().replace(microsecond=0)
 
         # Check quiz status
-        if quiz.current_status == QuizStatus.NOT_STARTED:
+        if quiz.start_time > now_time:
             raise HTTPException(
-                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+                status_code=status.HTTP_403_FORBIDDEN,  # changed from 405 to 403
                 detail="Test has not started yet.",
             )
 
-        if quiz.current_status == QuizStatus.FINISHED:
+        if quiz.end_time < now_time:
             raise HTTPException(
-                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+                status_code=status.HTTP_403_FORBIDDEN,  # changed from 405 to 403
                 detail="Test has already finished.",
             )
 
