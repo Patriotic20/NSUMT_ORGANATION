@@ -9,7 +9,7 @@ from core.models.user import User
 from core.utils.basic_service import BasicService
 from core.models import Quiz , Question , Result
 from core.models.quiz import QuizStatus
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 class QuizProcessService:
@@ -75,7 +75,7 @@ class QuizProcessService:
                 detail="Peroblem here"
             )
         
-        now_time = datetime.now().replace(microsecond=0)
+        now_time = datetime.now(timezone.utc).replace(microsecond=0)
         print(now_time)
 
         # Check quiz status
