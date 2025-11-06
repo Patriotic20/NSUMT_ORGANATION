@@ -16,7 +16,7 @@ from zoneinfo import ZoneInfo
 class QuizProcessService:
     def __init__(self , session: AsyncSession):
         self.session = session
-        self.service = BasicService
+        self.service = BasicService(self.session)
 
 
     async def start_quiz(
