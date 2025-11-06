@@ -57,7 +57,7 @@ class AuthService:
             data = {
                 "user_id": student_data["user_id"],
                 "username": student_data["username"],
-                "group_id": student_data["group_id"],
+                "group_id": student_data.get("group_id"),
                 "role": roles
             }
 

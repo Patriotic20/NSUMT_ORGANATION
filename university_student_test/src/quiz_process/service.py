@@ -20,7 +20,6 @@ class QuizProcessService:
         self,
         quiz_id: int,
         quiz_pin: str,
-        group_id: int,
     ) -> dict | None:
         """
         Fetch quiz questions for a given quiz ID, PIN, and group.
@@ -33,12 +32,15 @@ class QuizProcessService:
         """
 
         # Fetch quiz with related data
+        
+        student_data = select()
+
         stmt = (
             select(Quiz)
             .where(
                 Quiz.id == quiz_id,
                 Quiz.quiz_pin == quiz_pin,
-                # Quiz.group_id == group_id,
+                Quiz.group_id == group_id,
             )
             .options(
                 selectinload(Quiz.user).selectinload(User.teacher),
