@@ -25,6 +25,7 @@ def get_quiz_process_service(
 async def start_quiz(
     quiz_id: int,
     quiz_pin: str,
+    group_id: int | None = None,
     service: QuizProcessService = Depends(get_quiz_process_service),
     current_user: TokenPaylod = Depends(require_permission("read:quiz_process")),
 ):
@@ -33,6 +34,7 @@ async def start_quiz(
         quiz_id=quiz_id,
         quiz_pin=quiz_pin,
         user_id=current_user.user_id,
+        group_id=group_id,
     )
 
 
