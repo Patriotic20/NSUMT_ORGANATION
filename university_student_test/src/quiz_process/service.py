@@ -139,7 +139,8 @@ class QuizProcessService:
             "group_name": getattr(group, "name", None),
             "subject_id": getattr(subject, "id", None),
             "subject_name": getattr(subject, "name", None),
-            "questions": [q.to_dict(randomize_options=True) for q in questions],
+            # "questions": [q.to_dict(randomize_options=True) for q in questions],
+            "questions": questions
         }
 
 
