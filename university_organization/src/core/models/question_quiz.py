@@ -14,8 +14,8 @@ if TYPE_CHECKING:
 class QuestionQuiz(Base, IntIdPkMixin):
     __tablename__ = "question_quiz"
 
-    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id"), nullable=False)
-    quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id"), nullable=False)
+    question_id: Mapped[int] = mapped_column(ForeignKey("questions.id", ondelete="CASCADE"), nullable=False)
+    quiz_id: Mapped[int] = mapped_column(ForeignKey("quizzes.id", ondelete="CASCADE"), nullable=False)
 
     
     question: Mapped["Question"] = relationship("Question", back_populates="question_quizzes")

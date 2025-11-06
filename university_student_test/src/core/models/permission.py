@@ -26,5 +26,7 @@ class Permission(Base, IntIdPkMixin):
     roles: Mapped[list["Role"]] = relationship(
         "Role",
         secondary="role_permissions",
-        back_populates="permissions",
+        back_populates="permissions"
     )
+    
+    

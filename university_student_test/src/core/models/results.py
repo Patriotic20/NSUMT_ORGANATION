@@ -42,4 +42,5 @@ class Result(Base, IntIdPkMixin):
         back_populates="teacher_results"
     )
     group: Mapped["Group"] = relationship("Group", back_populates="results")
+    
     subject: Mapped["Subject"] = relationship("Subject", back_populates="results")
