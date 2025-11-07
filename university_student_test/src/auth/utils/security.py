@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 
-from auth.schemas.auth import TokenPaylod  # ✅ check if it's TokenPayload instead
+from auth.schemas.auth import TokenPaylod  
 from core.config import settings
 from core.database.db_helper import db_helper
 from core.models.user import User

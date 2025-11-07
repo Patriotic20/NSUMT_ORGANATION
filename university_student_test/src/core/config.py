@@ -53,12 +53,7 @@ class DatabaseConfig(BaseModel):
         "pk": "pk_%(table_name)s",
     }
 
-class RabbitMqSettings(BaseModel):
-    
-    url: str
-    queue_name: str
-    
-    
+
 class OrganizationUrls(BaseModel):
     permissions: str
     
@@ -77,7 +72,6 @@ class AppSettings(BaseSettings):
     db: DatabaseConfig
     jwt: JwtConfig
     file_url: FileUrl
-    rabbit: RabbitMqSettings
     organization_urls: OrganizationUrls 
     
     
