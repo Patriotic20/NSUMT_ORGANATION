@@ -59,6 +59,9 @@ async def get_all(
     current_user: TokenPaylod = Depends(require_permission("read:quiz")),
 ):
     """Retrieve all quizzes with pagination."""
+    return {
+        "data": current_user
+    }
     return await service.get_all_quiz(
         user_id=current_user.user_id,
         is_admin=current_user.role,
