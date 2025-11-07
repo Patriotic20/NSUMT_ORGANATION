@@ -8,12 +8,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from faststream.rabbit import RabbitBroker
 
 from auth.schemas.auth import TokenPaylod  # ✅ check if it's TokenPayload instead
 from core.config import settings
 from core.database.db_helper import db_helper
-from core.models.user import User, Role
+from core.models.user import User
+from core.models.role import Role
 
 oauth2_scheme = APIKeyHeader(name="Authorization")
 
