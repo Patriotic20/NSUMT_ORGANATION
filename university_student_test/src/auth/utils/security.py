@@ -51,12 +51,13 @@ async def validate_token_subscriber(token: str) -> TokenPaylod:
 
     async with db_helper.session_factory() as session:
         user: User | None = await get_user(session, username=username)
+        group = None
         
         if user.roles[0].name == "student":
             
             stmt = select(Student).where(Student.user_id == user.id)
             result = await session.execute(stmt)
-            student_data = result.scalar_one_or_none()
+            group = result.scalar_one_or_none()
             
         if not user:
             return TokenPaylod(valid=False)
@@ -64,7 +65,7 @@ async def validate_token_subscriber(token: str) -> TokenPaylod:
     return TokenPaylod(
         valid=True,
         user_id=user.id,
-        group_id=student_data.group_id,
+        group_id=group.group_id,
         username=user.username,
         role=user.roles[0].name if user.roles else None,
         permissions=[p.name for r in user.roles for p in r.permissions],
