@@ -1,20 +1,20 @@
 services:
-  university_auth:
-    build:
-      context: ./university_auth
-      dockerfile: Dockerfile
-    env_file:
-      - ./university_auth/.env
-    environment:
-      - DATABASE_URL=postgresql+asyncpg://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
-      - APP_CONFIG__RABBIT__URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
-    networks:
-      - university_network
-    depends_on:
-      shared_db:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+  # university_auth:
+  #   build:
+  #     context: ./university_auth
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - ./university_auth/.env
+  #   environment:
+  #     - DATABASE_URL=postgresql+asyncpg://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
+  #     - APP_CONFIG__RABBIT__URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
+  #   networks:
+  #     - university_network
+  #   depends_on:
+  #     shared_db:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
 
   university_organization:
     build:
@@ -88,21 +88,21 @@ services:
   #   networks:
   #     - university_network
 
-  rabbitmq:
-    image: rabbitmq:3.12-management
-    environment:
-      - RABBITMQ_DEFAULT_USER=ag62efg
-      - RABBITMQ_DEFAULT_PASS=lidf43r
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    networks:
-      - university_network
+  # rabbitmq:
+  #   image: rabbitmq:3.12-management
+  #   environment:
+  #     - RABBITMQ_DEFAULT_USER=ag62efg
+  #     - RABBITMQ_DEFAULT_PASS=lidf43r
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   healthcheck:
+  #     test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 20s
+  #   networks:
+  #     - university_network
 
   gateway:
     image: nginx:alpine
@@ -120,7 +120,7 @@ services:
 volumes:
   shared_db_data:
   # student_test_db_data:
-  rabbitmq_data:
+  # rabbitmq_data:
 
 networks:
   university_network:

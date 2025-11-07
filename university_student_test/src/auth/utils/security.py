@@ -1,60 +1,100 @@
-
-
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import APIKeyHeader
 from typing import Annotated, Callable
 
-
-from auth.schemas.auth import TokenPaylod
+import jwt
+from jwt.exceptions import InvalidTokenError
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from faststream.rabbit import RabbitBroker
 
+from auth.schemas.auth import TokenPaylod  # ✅ check if it's TokenPayload instead
 from core.config import settings
-
-
-
-
-
+from core.database.db_helper import db_helper
+from core.models.user import User, Role
 
 oauth2_scheme = APIKeyHeader(name="Authorization")
 
+async def get_user(session: AsyncSession, username: str) -> User:
+    stmt = (
+        select(User)
+        .where(User.username == username)
+        .options(
+            selectinload(User.roles).selectinload(Role.permissions)
+        )
+    )
+    result = await session.execute(stmt)
+    user_data = result.scalars().first()
 
+    if not user_data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    return user_data
 
+async def validate_token_subscriber(token: str) -> TokenPaylod:
+    try:
+        payload = jwt.decode(
+            token,
+            settings.jwt.access_secret_key,
+            algorithms=[settings.jwt.algorithm],
+        )
+        username = payload.get("username")
+        if not username:
+            return TokenPaylod(valid=False)
+    except InvalidTokenError:
+        return TokenPaylod(valid=False)
 
+    async with db_helper.session_factory() as session:
+        user: User | None = await get_user(session, username=username)
+        if not user:
+            return TokenPaylod(valid=False)
+
+    return TokenPaylod(
+        valid=True,
+        user_id=user.id,
+        group_id=payload.get("group_id"),
+        username=user.username,
+        role=user.roles[0].name if user.roles else None,
+        permissions=[p.name for r in user.roles for p in r.permissions],
+    )
 
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> TokenPaylod:
-    async with RabbitBroker(settings.rabbit.url) as broker:
-        response = await broker.publish(
-            token,
-            settings.rabbit.queue_name,
-            rpc=True,
-            rpc_timeout=5,
-        )
-        
-    print(response)
-    payload = TokenPaylod(**response)
+    payload = await validate_token_subscriber(token)
 
     if not payload.valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token",
+            detail="Invalid or expired token",
         )
 
     return payload
 
 def require_permission(*permissions: str, any_of: bool = True) -> Callable:
+    """
+    Dependency to protect routes by required permissions.
+
+    """
     async def checker(user: TokenPaylod = Depends(get_current_user)) -> TokenPaylod:
-        user_perms = set(user.permissions)
+        user_perms = set(user.permissions or [])
 
         if any_of:
             if not any(p in user_perms for p in permissions):
-                raise HTTPException(status_code=403, detail="Permission denied")
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Permission denied",
+                )
         else:
             if not all(p in user_perms for p in permissions):
-                raise HTTPException(status_code=403, detail="Permission denied")
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Permission denied",
+                )
 
         return user
 
