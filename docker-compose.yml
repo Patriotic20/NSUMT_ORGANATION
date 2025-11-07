@@ -1,21 +1,4 @@
 services:
-  # university_auth:
-  #   build:
-  #     context: ./university_auth
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - ./university_auth/.env
-  #   environment:
-  #     - DATABASE_URL=postgresql+asyncpg://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
-  #     - APP_CONFIG__RABBIT__URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
-  #   networks:
-  #     - university_network
-  #   depends_on:
-  #     shared_db:
-  #       condition: service_healthy
-  #     rabbitmq:
-  #       condition: service_healthy
-
   university_organization:
     build:
       context: ./university_organization
@@ -26,33 +9,39 @@ services:
       - ./university_organization/.env
     environment:
       - DATABASE_URL=postgresql+asyncpg://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
-      # - APP_CONFIG__RABBIT__URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
     networks:
       - university_network
     depends_on:
       shared_db:
         condition: service_healthy
-      # rabbitmq:
-      #   condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+
+
 
   university_student_test:
     build:
       context: ./university_student_test
       dockerfile: Dockerfile
-
     ports:
       - "8010:8010"
     env_file:
       - ./university_student_test/.env
     environment:
       - DATABASE_URL=postgresql+asyncpg://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
-      # - APP_CONFIG__RABBIT__URL=amqp://ag62efg:lidf43r@rabbitmq:5672/
     networks:
       - university_network
     depends_on:
-      - university_organization
-      - shared_db
-      # - rabbitmq
+      university_organization:
+        condition: service_healthy
+      shared_db:
+        condition: service_healthy
+
+
 
   shared_db:
     image: postgres:15
@@ -71,39 +60,6 @@ services:
     networks:
       - university_network
 
-  # student_test_db:
-  #   image: postgres:15
-  #   environment:
-  #     - POSTGRES_USER=i6arf3t
-  #     - POSTGRES_PASSWORD=odks953
-  #     - POSTGRES_DB=university_student_db
-  #   volumes:
-  #     - student_test_db_data:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U i6arf3t -d university_student_db"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 10s
-  #   networks:
-  #     - university_network
-
-  # rabbitmq:
-  #   image: rabbitmq:3.12-management
-  #   environment:
-  #     - RABBITMQ_DEFAULT_USER=ag62efg
-  #     - RABBITMQ_DEFAULT_PASS=lidf43r
-  #   volumes:
-  #     - rabbitmq_data:/var/lib/rabbitmq
-  #   healthcheck:
-  #     test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 20s
-  #   networks:
-  #     - university_network
-
   gateway:
     image: nginx:alpine
     ports:
@@ -111,7 +67,6 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      # - university_auth
       - university_organization
       - university_student_test
     networks:
@@ -119,8 +74,7 @@ services:
 
 volumes:
   shared_db_data:
-  # student_test_db_data:
-  # rabbitmq_data:
+
 
 networks:
   university_network:

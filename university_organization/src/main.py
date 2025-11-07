@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import JSONResponse
 import uvicorn
 
 
@@ -20,7 +21,9 @@ app = FastAPI(
 
 app.include_router(api_router)
 
-
+@app.get("/health", tags=["Health"])
+async def health_check():    
+    return JSONResponse(status_code=200, content={"status": "ok"})
 
 
 if __name__ == "__main__":
