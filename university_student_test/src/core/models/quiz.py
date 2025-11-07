@@ -3,7 +3,6 @@ from sqlalchemy import String, Integer, Enum, ForeignKey
 from datetime import datetime
 from typing import TYPE_CHECKING
 import enum
-from zoneinfo import ZoneInfo
 
 from .base import Base
 from .mixins.int_id_pk import IntIdPkMixin
@@ -14,6 +13,7 @@ if TYPE_CHECKING:
     from .user import User
     from .group import Group
     from .subject import Subject
+    from .user_answer import UserAnswer
 
 
 class QuizStatus(enum.Enum):
@@ -82,21 +82,22 @@ class Quiz(Base, IntIdPkMixin):
         back_populates="quiz",
         cascade="all, delete-orphan"
     )
+    
+    
+    user_answers: Mapped[list["UserAnswer"]] = relationship(
+        "UserAnswer",
+        back_populates="quiz"
+    )
+    
 
     # --- Helper Property ---
     @property
     def current_status(self) -> QuizStatus:
-        """Returns the current status of the quiz dynamically based on Asia/Tashkent time."""
-        tz = ZoneInfo("Asia/Tashkent")
-        now = datetime.now(tz=tz).replace(microsecond=0)
+        """Returns the current status of the quiz dynamically based on time."""
+        now = datetime.now().replace(microsecond=0)
 
-        # Make quiz times timezone-aware
-        start_time = self.start_time.replace(tzinfo=tz)
-        end_time = self.end_time.replace(tzinfo=tz)
-
-        if now < start_time:
+        if now < self.start_time:
             return QuizStatus.NOT_STARTED
-        elif now > end_time:
-            return QuizStatus.FINISHED
-        else:
+        if self.start_time <= now <= self.end_time:
             return QuizStatus.IN_PROGRESS
+        return QuizStatus.FINISHED

@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from .questions import Question
     from .quiz import Quiz
     from .results import Result
+    from .user_answer import UserAnswer
 
 
 class User(Base, IntIdPkMixin):
@@ -84,4 +85,9 @@ class User(Base, IntIdPkMixin):
         back_populates="teacher",
         foreign_keys="[Result.teacher_id]",
         cascade="all, delete-orphan"
+    )
+    
+    user_answers: Mapped[list["UserAnswer"]] = relationship(
+        "UserAnswer",
+        back_populates="user"
     )

@@ -3,15 +3,16 @@ from sqlalchemy import select , func
 from fastapi import HTTPException, status
 from sqlalchemy.orm import selectinload
 
-from .schemas import ResultCreate , QuizSubmission
+from .schemas import ResultCreate , QuizSubmission, UserAnswerCreate
 from core.models.user import User
+from core.models.user_answer import UserAnswer
 
 from core.utils.basic_service import BasicService
 from core.models import Quiz , Question , Result
 from core.models.quiz import QuizStatus
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
-
+from sqlalchemy import insert
 
 class QuizProcessService:
     def __init__(self , session: AsyncSession):
@@ -148,6 +149,8 @@ class QuizProcessService:
     async def end_quiz(self, submission: QuizSubmission, student_id: int):
         """Process quiz submission, calculate score, and save result."""
 
+        await self.save_user_answers(submission = submission, user_id = student_id)
+
         # Fetch quiz
         quiz_stmt = select(Quiz).where(Quiz.id == submission.quiz_id)
         quiz_result = await self.session.execute(quiz_stmt)
@@ -171,12 +174,16 @@ class QuizProcessService:
                 status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
                 detail="Quiz has already finished."
             )
-
+            
+        
         # Fetch all submitted questions
         submitted_ids = [q.id for q in submission.questions]
         stmt = select(Question).where(Question.id.in_(submitted_ids))
         result = await self.session.execute(stmt)
         question_records = {q.id: q for q in result.scalars().all()}
+        
+        
+        
 
         correct_count = 0
         incorrect_count = 0
@@ -196,7 +203,7 @@ class QuizProcessService:
         # Grade logic
         if percentage >= 86:
             grade = 5
-        elif percentage >= 76:
+        elif percentage >= 72:
             grade = 4
         elif percentage >= 56:
             grade = 3
@@ -228,3 +235,20 @@ class QuizProcessService:
                 "percentage": percentage
             }
         }
+        
+        
+
+    async def save_user_answers(self, submission: QuizSubmission, user_id: int):
+        
+        stmt = insert(UserAnswer).values([
+            {
+                "quiz_id": submission.quiz_id,
+                "user_id": user_id,
+                "question_id": q.id,
+                "options": q.option
+            }
+            for q in submission.questions
+        ])
+        
+        await self.session.execute(stmt)
+        await self.session.commit()

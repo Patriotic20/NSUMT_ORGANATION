@@ -16,6 +16,13 @@ def get_service(session: AsyncSession = Depends(db_helper.session_getter)) -> Re
     """Dependency to provide ResultService instance."""
     return ResultService(session=session)
 
+@router.get("/user_answers/{user_id}")
+async def user_answers(
+    user_id: int,
+    service: ResultService = Depends(get_service),
+    _ : TokenPaylod = Depends(require_permission("read:result")),
+):
+    return await service.get_users_answers(user_id=user_id)
 
 @router.get("/get/{result_id}")
 async def get_by_id(

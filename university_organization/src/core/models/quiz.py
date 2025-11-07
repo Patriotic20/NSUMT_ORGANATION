@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .user import User
     from .group import Group
     from .subject import Subject
+    from .user_answer import UserAnswer
 
 
 class QuizStatus(enum.Enum):
@@ -81,6 +82,13 @@ class Quiz(Base, IntIdPkMixin):
         back_populates="quiz",
         cascade="all, delete-orphan"
     )
+    
+    
+    user_answers: Mapped[list["UserAnswer"]] = relationship(
+        "UserAnswer",
+        back_populates="quiz"
+    )
+    
 
     # --- Helper Property ---
     @property

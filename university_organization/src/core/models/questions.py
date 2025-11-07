@@ -11,6 +11,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .question_quiz import QuestionQuiz
+    from .user_answer import UserAnswer
     from .user import User
     from .subject import Subject
 
@@ -46,6 +47,11 @@ class Question(Base, IntIdPkMixin):
     user: Mapped["User"] = relationship(
         "User",
         back_populates="questions"
+    )
+    
+    user_answers: Mapped["UserAnswer"] = relationship(
+        "UserAnswer",
+        back_populates="question"
     )
     
     def to_dict(self, randomize_options: bool = True):

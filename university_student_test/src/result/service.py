@@ -3,11 +3,41 @@ from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models.results import Result
-
+from core.models.user_answer import UserAnswer
+from sqlalchemy.orm import selectinload
+from core.models.questions import Question
 
 class ResultService:
     def __init__(self, session: AsyncSession):
         self.session = session
+        
+        
+    async def get_users_answers(self, user_id: int):
+        stmt = (
+            select(UserAnswer)
+            .where(UserAnswer.user_id == user_id)
+            .options(selectinload(UserAnswer.question))
+        )
+
+        result = await self.session.execute(stmt)
+        user_answers = result.scalars().all()
+
+        return [
+            {
+                "question_id": ua.question_id,
+                "question_text": ua.question.text,
+                "correct_answers": ua.question.option_a,  
+                "selected_option": ua.options,
+                "option_a": ua.question.option_a,
+                "option_b": ua.question.option_b,
+                "option_c": ua.question.option_c,
+                "option_d": ua.question.option_d,
+            }
+            for ua in user_answers
+        ]
+
+
+        
 
     async def get_by_id(self, id: int, user_id: int, is_admin: Optional[str] = None) -> Result:
         """

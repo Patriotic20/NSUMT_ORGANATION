@@ -18,7 +18,8 @@ __all__ = [
     "Quiz",
     "Question",
     "QuestionQuiz",
-    "Result"
+    "Result",
+    "UserAnswer"
 ]
 
 from .base import Base
@@ -48,3 +49,5 @@ from .quiz import Quiz
 from .questions import Question
 from .question_quiz import QuestionQuiz
 from .results import Result
+
+from .user_answer import UserAnswer

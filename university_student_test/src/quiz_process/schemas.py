@@ -21,3 +21,12 @@ class ResultCreate(BaseModel):
     correct_answers: int
     incorrect_answers: int
     grade: float
+    
+    
+class UserAnswerCreate(BaseModel):
+    user_id: int
+    quiz_id: int
+    question_id: int
+    option: str
+    
+    
