@@ -9,7 +9,7 @@ from auth.schemas.auth import TokenPaylod
 from auth.utils.security import oauth2_scheme
 from core.config import settings
 from core.utils.database import db_helper
-from core.models.user import User, Role
+from core.models.user import User
 from .security import get_user  # your local get_user function
 
 
