@@ -37,7 +37,11 @@ class Question(Base, IntIdPkMixin):
     option_d: Mapped[str] = mapped_column(nullable=False)
     
     
-    question_quizzes: Mapped[list["QuestionQuiz"]] = relationship("QuestionQuiz", back_populates="question")
+    question_quizzes: Mapped[list["QuestionQuiz"]] = relationship(
+        "QuestionQuiz", 
+        back_populates="question",
+        cascade="all, delete-orphan"
+        )
 
     subject: Mapped["Subject"] = relationship(
         "Subject",
