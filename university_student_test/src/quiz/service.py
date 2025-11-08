@@ -242,11 +242,6 @@ class QuizService:
 
         new_questions = [q for q in questions if q.id not in existing_ids]
 
-        if not new_questions:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="All questions are already linked to this quiz"
-            )
 
         new_links = [
             QuestionQuiz(quiz_id=quiz.id, question_id=q.id)
