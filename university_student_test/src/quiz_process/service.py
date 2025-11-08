@@ -162,18 +162,18 @@ class QuizProcessService:
                 detail="Quiz not found."
             )
 
-        # Validate quiz status
-        if quiz_data.current_status.name == "NOT_STARTED":
-            raise HTTPException(
-                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-                detail="Quiz has not started yet."
-            )
+        # # Validate quiz status
+        # if quiz_data.current_status.name == "NOT_STARTED":
+        #     raise HTTPException(
+        #         status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        #         detail="Quiz has not started yet."
+        #     )
 
-        if quiz_data.current_status.name == "FINISHED":
-            raise HTTPException(
-                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-                detail="Quiz has already finished."
-            )
+        # if quiz_data.current_status.name == "FINISHED":
+        #     raise HTTPException(
+        #         status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+        #         detail="Quiz has already finished."
+        #     )
             
         
         # Fetch all submitted questions
