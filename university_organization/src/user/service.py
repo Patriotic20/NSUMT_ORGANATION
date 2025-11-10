@@ -23,7 +23,7 @@ class UserService:
         self.service = BasicService(session=self.session)
 
     async def me(self, user_id: int):
-        # First, get the user and their roles
+        # 1️⃣ Load user and roles
         stmt = (
             select(User)
             .where(User.id == user_id)
@@ -34,23 +34,23 @@ class UserService:
         if not user:
             return None
 
-        # Dynamically load role-specific relationships
-        options = []
-
+        # 2️⃣ Collect role names
         role_names = {role.name for role in user.roles}
 
-        if "teacher" in role_names and user.teacher:
+        # 3️⃣ Prepare eager-loading options based on roles
+        options = [selectinload(User.roles)]  # keep roles loaded
+
+        if "teacher" in role_names:
             options.append(selectinload(User.teacher))
-        if "student" in role_names and user.student:
+        if "student" in role_names:
             options.append(selectinload(User.student))
-        if "worker" in role_names and user.worker:
+        if "worker" in role_names:
             options.append(selectinload(User.worker))
 
-        # Fetch user with only relevant relationships
-        if options:
-            stmt = select(User).where(User.id == user_id).options(*options)
-            result = await self.session.execute(stmt)
-            user = result.scalar_one()
+        # 4️⃣ Re-query user with all needed relationships
+        stmt = select(User).where(User.id == user_id).options(*options)
+        result = await self.session.execute(stmt)
+        user = result.scalar_one()
 
         return user
 
