@@ -2,12 +2,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select
 
+
 from fastapi import HTTPException, status
 
 
 from core.utils.service import BasicService
 from core.models import User
-from core.models import UserRole
 from core.schemas.get_all import GetAll
 
 from .schemas import (
@@ -15,13 +15,45 @@ from .schemas import (
     WorkerResponse, 
     StudentResponse, 
     TeacherResponse,
-    UserRoleCreate
 )
 
 class UserService:
     def __init__(self, session: AsyncSession):
         self.session = session
         self.service = BasicService(session=self.session)
+
+    async def me(self, user_id: int):
+        # First, get the user and their roles
+        stmt = (
+            select(User)
+            .where(User.id == user_id)
+            .options(selectinload(User.roles))
+        )
+        result = await self.session.execute(stmt)
+        user = result.scalar_one_or_none()
+        if not user:
+            return None
+
+        # Dynamically load role-specific relationships
+        options = []
+
+        role_names = {role.name for role in user.roles}
+
+        if "teacher" in role_names and user.teacher:
+            options.append(selectinload(User.teacher))
+        if "student" in role_names and user.student:
+            options.append(selectinload(User.student))
+        if "worker" in role_names and user.worker:
+            options.append(selectinload(User.worker))
+
+        # Fetch user with only relevant relationships
+        if options:
+            stmt = select(User).where(User.id == user_id).options(*options)
+            result = await self.session.execute(stmt)
+            user = result.scalar_one()
+
+        return user
+
 
     async def get_by_id(self, id: int) -> UserResponse:
         stmt = (
