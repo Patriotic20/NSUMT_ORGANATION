@@ -29,7 +29,7 @@ def get_user_service(session: AsyncSession = Depends(db_helper.session_getter)):
 @router.get("/me")
 async def user_info(
     service: UserService = Depends(get_user_service),
-    current_user: TokenPaylod = Depends(require_permission("read:me"))
+    current_user: TokenPaylod = Depends(require_permission("read:user"))
 ):
     return await service.me(user_id=current_user.user_id)
 
