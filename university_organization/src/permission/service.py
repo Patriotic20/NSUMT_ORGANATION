@@ -27,10 +27,12 @@ class PermissionService:
              filters=[Permission.id == id]
         )
     
-    async def get_all(self, pagination: GetAll):
+    async def get_all(self, pagination: GetAll, search: str):
         return await self.service.get(
             model=Permission,
-            pagination=pagination
+            pagination=pagination,
+            search=search,
+            search_fields=["name"]
         )
     
     async def update(self, id: int, update_data: PermissionUpdate):

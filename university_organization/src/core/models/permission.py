@@ -1,10 +1,7 @@
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base
 from .mixins.int_id_pk import IntIdPkMixin
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
 from typing import TYPE_CHECKING
-
-
 
 if TYPE_CHECKING:
     from .role import Role
@@ -12,21 +9,20 @@ if TYPE_CHECKING:
 
 
 class Permission(Base, IntIdPkMixin):
-    
+    __tablename__ = "permissions"
+
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
-    
-    
+
     role_permissions: Mapped[list["RolePermission"]] = relationship(
         "RolePermission",
         back_populates="permission",
-        cascade="all, delete-orphan"
+        cascade="all, delete-orphan",
+        overlaps="roles,permissions",
     )
-    
-    
+
     roles: Mapped[list["Role"]] = relationship(
         "Role",
         secondary="role_permissions",
-        back_populates="permissions"
+        back_populates="permissions",
+        overlaps="role_permissions,permission,role_permissions.permission",
     )
-    
-    

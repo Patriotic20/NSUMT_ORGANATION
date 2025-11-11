@@ -2,9 +2,8 @@ import jwt
 from jwt.exceptions import InvalidTokenError
 from fastapi import HTTPException, status, Depends
 from typing import Annotated, Callable
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from faststream.rabbit import RabbitBroker
+
 from auth.schemas.auth import TokenPaylod
 from auth.utils.security import oauth2_scheme
 from core.config import settings

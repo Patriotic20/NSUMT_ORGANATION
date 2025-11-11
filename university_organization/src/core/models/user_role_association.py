@@ -19,9 +19,11 @@ class UserRole(Base, IntIdPkMixin):
     
     user: Mapped["User"] = relationship(
         "User",
-        back_populates="user_roles"
+        back_populates="user_roles",
+        overlaps="roles,users"
     )
     role: Mapped["Role"] = relationship(
         "Role",
-        back_populates="user_roles"
+        back_populates="user_roles",
+        overlaps="roles,users"
     )

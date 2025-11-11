@@ -23,9 +23,6 @@ def get_user_service(session: AsyncSession = Depends(db_helper.session_getter)):
     return UserService(session=session)
 
 
-
-
-
 @router.get("/me")
 async def user_info(
     service: UserService = Depends(get_user_service),

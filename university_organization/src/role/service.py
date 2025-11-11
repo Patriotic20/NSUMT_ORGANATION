@@ -38,11 +38,14 @@ class RoleService:
     
     async def get_all(
         self,
-        pagination: GetAll
+        pagination: GetAll,
+        search: str,
         ):
         return await self.service.get(
             model=Role,
-            pagination=pagination
+            pagination=pagination,
+            search=search,
+            search_fields=["name"]
             )
     
     async def update(self, id: int, update_data: RoleUpdate):
