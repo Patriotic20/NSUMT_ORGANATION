@@ -18,6 +18,7 @@ class QuizBase(BaseModel):
     start_time: datetime = Field(default=DEFAULT_START_TIME)
     quiz_pin: str
 
+
     @field_validator("start_time", mode="before")
     def normalize_start_time(cls, v) -> datetime:
         """
