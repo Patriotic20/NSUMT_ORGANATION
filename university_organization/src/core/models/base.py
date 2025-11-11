@@ -4,9 +4,10 @@ from sqlalchemy.orm import declared_attr
 from sqlalchemy import MetaData
 
 from core.config import settings
+from .mixins.timestamp_mixin import TimestampMixin
 
 
-class Base(DeclarativeBase):
+class Base(DeclarativeBase, TimestampMixin):
     __abstract__ = True
 
     metadata = MetaData(naming_convention=settings.db.naming_convention)
