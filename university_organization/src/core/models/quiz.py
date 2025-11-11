@@ -42,7 +42,7 @@ class Quiz(Base, IntIdPkMixin):
     quiz_time: Mapped[int] = mapped_column(Integer, nullable=False)
     start_time: Mapped[datetime] = mapped_column(nullable=False)
     quiz_pin: Mapped[str] = mapped_column(String(100), nullable=False)
-    is_activate: Mapped[bool] = mapped_column(nullable=False, default=False)
+    is_activate: Mapped[bool] = mapped_column(nullable=False, server_default="false")
 
 
     # --- Relationships ---
