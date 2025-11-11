@@ -24,6 +24,7 @@ def upgrade() -> None:
     op.add_column('quizzes', sa.Column('is_activate', sa.Boolean(), nullable=False))
     op.drop_column('quizzes', 'status')
     op.drop_column('quizzes', 'end_time')
+    op.execute("UPDATE quizzes SET is_activate = false WHERE is_activate IS NULL")
     # ### end Alembic commands ###
 
 
