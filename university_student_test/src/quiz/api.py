@@ -85,7 +85,7 @@ async def update(
     )
 
 
-@router.patch("/toggle_active")
+@router.put("/toggle_active")
 async def toggle_active(
     quiz_id: int,
     active: bool,
