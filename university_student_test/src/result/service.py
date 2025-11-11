@@ -103,7 +103,7 @@ class ResultService:
             } if result_obj.subject else None,
             "quiz": {
                 "id": result_obj.quiz_id,
-                "name": result_obj.quiz.name
+                "name": result_obj.quiz.quiz_name
             } if result_obj.quiz else None,
         }
 
@@ -198,7 +198,7 @@ class ResultService:
                 } if first.subject else None,
                 "quiz": {
                     "id": first.quiz_id,
-                    "name": first.quiz.name
+                    "name": first.quiz.quiz_name
                 } if first.quiz else None,
                 "result_ids": result_ids,
             }
@@ -273,7 +273,7 @@ class ResultService:
                 } if r.subject else None,
                 "quiz": {
                     "id": r.quiz_id,
-                    "name": r.quiz.name
+                    "name": r.quiz.quiz_name
                 } if r.quiz else None,
             }
             data.append(item)

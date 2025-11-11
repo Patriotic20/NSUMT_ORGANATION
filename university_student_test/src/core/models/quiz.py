@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, ForeignKey
+from sqlalchemy import String, Integer, ForeignKey, text
 from datetime import datetime
 from typing import TYPE_CHECKING
 
@@ -42,7 +42,8 @@ class Quiz(Base, IntIdPkMixin):
     quiz_time: Mapped[int] = mapped_column(Integer, nullable=False)
     start_time: Mapped[datetime] = mapped_column(nullable=False)
     quiz_pin: Mapped[str] = mapped_column(String(100), nullable=False)
-    is_activate: Mapped[bool] = mapped_column(nullable=True, default=False)
+    is_activate: Mapped[bool] = mapped_column( nullable=False, server_default=text("false")  # sets DB default for new rows and migration
+)
 
 
     # --- Relationships ---
