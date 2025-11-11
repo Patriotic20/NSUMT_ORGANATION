@@ -9,7 +9,6 @@ from core.models.user_answer import UserAnswer
 
 from core.utils.basic_service import BasicService
 from core.models import Quiz , Question , Result
-from core.models.quiz import QuizStatus
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from sqlalchemy import insert
@@ -86,15 +85,18 @@ class QuizProcessService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Quiz not found or inaccessible."
             )
+        
+        if not quiz.is_activate:
+            raise HTTPException(
+                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
+                detail="Test is not active."
+            )
 
         # Time validation
         tz = ZoneInfo("Asia/Tashkent")
         now = datetime.now(tz)
         start_time = quiz.start_time.replace(tzinfo=tz)
-        end_time = quiz.end_time.replace(tzinfo=tz)
-        print(now)
-        print(start_time)
-        print(end_time)
+
 
         if now < start_time:
             raise HTTPException(
@@ -102,12 +104,7 @@ class QuizProcessService:
                 detail="Test has not started yet.",
             )
 
-        if now > end_time:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Test has already finished.",
-            )
-
+        
         # Fetch questions
         stmt_questions = (
             select(Question)
@@ -120,6 +117,7 @@ class QuizProcessService:
         )
         result = await self.session.execute(stmt_questions)
         questions = result.scalars().all()
+
 
         if not questions:
             raise HTTPException(
@@ -140,6 +138,7 @@ class QuizProcessService:
             "group_name": getattr(group, "name", None),
             "subject_id": getattr(subject, "id", None),
             "subject_name": getattr(subject, "name", None),
+            "duration": quiz.quiz_time,
             "questions": [q.to_dict(randomize_options=True) for q in questions],
         }
 
@@ -161,19 +160,6 @@ class QuizProcessService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Quiz not found."
             )
-
-        # # Validate quiz status
-        # if quiz_data.current_status.name == "NOT_STARTED":
-        #     raise HTTPException(
-        #         status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-        #         detail="Quiz has not started yet."
-        #     )
-
-        # if quiz_data.current_status.name == "FINISHED":
-        #     raise HTTPException(
-        #         status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-        #         detail="Quiz has already finished."
-        #     )
             
         
         # Fetch all submitted questions

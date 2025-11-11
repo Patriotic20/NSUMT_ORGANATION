@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, Integer, Enum, ForeignKey
+from sqlalchemy import String, Integer, ForeignKey
 from datetime import datetime
 from typing import TYPE_CHECKING
-import enum
+
 
 from .base import Base
 from .mixins.int_id_pk import IntIdPkMixin
@@ -15,11 +15,6 @@ if TYPE_CHECKING:
     from .subject import Subject
     from .user_answer import UserAnswer
 
-
-class QuizStatus(enum.Enum):
-    NOT_STARTED = "not_started"
-    IN_PROGRESS = "in_progress"
-    FINISHED = "finished"
 
 
 class Quiz(Base, IntIdPkMixin):
@@ -46,14 +41,9 @@ class Quiz(Base, IntIdPkMixin):
     question_number: Mapped[int] = mapped_column(Integer, nullable=False)
     quiz_time: Mapped[int] = mapped_column(Integer, nullable=False)
     start_time: Mapped[datetime] = mapped_column(nullable=False)
-    end_time: Mapped[datetime] = mapped_column(nullable=False)
     quiz_pin: Mapped[str] = mapped_column(String(100), nullable=False)
+    is_activate: Mapped[bool] = mapped_column(nullable=False, default=False)
 
-    status: Mapped["QuizStatus"] = mapped_column(
-        Enum(QuizStatus, native_enum=False),
-        nullable=False,
-        default=QuizStatus.NOT_STARTED
-    )
 
     # --- Relationships ---
     user: Mapped["User"] = relationship(
@@ -90,14 +80,4 @@ class Quiz(Base, IntIdPkMixin):
     )
     
 
-    # --- Helper Property ---
-    @property
-    def current_status(self) -> QuizStatus:
-        """Returns the current status of the quiz dynamically based on time."""
-        now = datetime.now().replace(microsecond=0)
-
-        if now < self.start_time:
-            return QuizStatus.NOT_STARTED
-        if self.start_time <= now <= self.end_time:
-            return QuizStatus.IN_PROGRESS
-        return QuizStatus.FINISHED
+    

@@ -1,5 +1,3 @@
-from datetime import timedelta
-
 from fastapi import HTTPException, status
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,7 +8,7 @@ from core.models.question_quiz import QuestionQuiz
 from core.models.questions import Question
 from core.models.user import User
 from core.utils.basic_service import BasicService
-from .schemas import QuizUpdate, QuizInsert, QuizBase
+from .schemas import QuizUpdate, QuizBase
 
 
 class QuizService:
@@ -20,14 +18,8 @@ class QuizService:
 
     async def create_quiz(self, quiz_data: QuizBase):
         """Create a new quiz with calculated end time."""
-        end_time = quiz_data.start_time + timedelta(minutes=quiz_data.quiz_time)
+        created_quiz = await self.basic_service.create(model = Quiz, obj_items = quiz_data)
 
-        create_data = QuizInsert(
-            **quiz_data.model_dump(),
-            end_time=end_time
-        )
-
-        created_quiz = await self.basic_service.create(model=Quiz, obj_items=create_data)
         if not created_quiz:
             raise HTTPException(
                 status_code=500,
@@ -104,8 +96,7 @@ class QuizService:
             "question_number": quiz.question_number,
             "duration": quiz.quiz_time,
             "start_time": quiz.start_time,
-            "end_time": quiz.end_time,
-            "current_status": quiz.status,
+            "activate": quiz.is_activate
         }
 
 
@@ -171,8 +162,7 @@ class QuizService:
                 "question_number": quiz.question_number,
                 "duration": quiz.quiz_time,
                 "start_time": quiz.start_time,
-                "end_time": quiz.end_time,
-                "current_status": quiz.status,
+                "activate": quiz.is_activate
             })
 
         return {
@@ -181,6 +171,7 @@ class QuizService:
             "offset": offset,
             "data": data,
         }
+    
 
     async def update_quiz(
         self,
@@ -252,3 +243,25 @@ class QuizService:
         await self.session.commit()
 
         return {"created_links": len(new_links)}
+    
+
+
+    async def toggle_active(self, quiz_id: int, active: bool):
+        # Get the quiz
+        stmt = select(Quiz).where(Quiz.id == quiz_id)
+        result = await self.session.execute(stmt)
+        quiz_data = result.scalars().first()
+
+        if not quiz_data:
+            return HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Quiz Data not found"
+            )
+
+        # Update the is_activate field
+        quiz_data.is_activate = active
+
+        # Commit the changes
+        await self.session.commit()
+
+        return quiz_data

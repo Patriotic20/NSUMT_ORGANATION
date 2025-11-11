@@ -33,7 +33,8 @@ class User(Base, IntIdPkMixin):
     roles: Mapped[list["Role"]] = relationship(
         "Role",
         secondary="user_roles",
-        back_populates = "users"
+        back_populates = "users",
+        overlaps="user_roles"
     )
 
     student: Mapped["Student"] = relationship(

@@ -24,7 +24,7 @@ def get_quiz_service(session: AsyncSession = Depends(db_helper.session_getter)) 
 async def create(
     quiz_data: QuizBase,
     service: QuizService = Depends(get_quiz_service),
-    current_user: TokenPaylod = Depends(require_permission("create:quiz")),
+    _ : TokenPaylod = Depends(require_permission("create:quiz")),
 ):
     """Create a new quiz."""
     return await service.create_quiz(quiz_data=quiz_data)
@@ -84,6 +84,15 @@ async def update(
         is_admin=current_user.role,
     )
 
+
+@router.patch("/toggle_active")
+async def toggle_active(
+    quiz_id: int,
+    active: bool,
+    service: QuizService = Depends(get_quiz_service),
+    _ : TokenPaylod = Depends(require_permission("update:quiz"))
+):
+    return await service.toggle_active(quiz_id = quiz_id, active=active)
 
 @router.delete("/delete/{quiz_id}")
 async def delete(

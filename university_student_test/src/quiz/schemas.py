@@ -51,8 +51,8 @@ class QuizBase(BaseModel):
 
 
 
-class QuizInsert(QuizBase):
-    end_time: datetime
+# class QuizInsert(QuizBase):
+#     end_time: datetime
 
 # class QuizResponse(QuizBase):
 #     id: int

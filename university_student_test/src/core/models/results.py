@@ -31,6 +31,7 @@ class Result(Base, IntIdPkMixin):
     
 
     quiz: Mapped["Quiz"] = relationship("Quiz", back_populates="results")
+    
     student: Mapped["User"] = relationship(
         "User",
         foreign_keys=[student_id],

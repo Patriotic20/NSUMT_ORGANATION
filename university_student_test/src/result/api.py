@@ -38,6 +38,28 @@ async def get_by_id(
     )
 
 
+@router.get("/get_by_filed")
+async def get_by_filed(
+    student_id: int | None = None,
+    teacher_id: int | None = None,
+    group_id: int | None = None,
+    subject_id: int | None = None,
+    quiz_id: int | None = None,
+    service: ResultService = Depends(get_service),
+    current_user: TokenPaylod = Depends(require_permission("read:result")),
+):
+    """
+    Retrieve results grouped by student and filtered by given fields.
+    """
+    return await service.get_by_filed(
+        student_id=student_id,
+        teacher_id=teacher_id,
+        group_id=group_id,
+        subject_id=subject_id,
+        quiz_id=quiz_id,
+    )
+
+
 @router.get("")
 async def get_all(
     limit: int = 20,

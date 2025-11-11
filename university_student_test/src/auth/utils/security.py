@@ -76,12 +76,11 @@ async def get_current_user(
 ) -> TokenPaylod:
     payload = await validate_token_subscriber(token)
 
-    if not payload.valid:
+    if not payload:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or expired token",
         )
-
     return payload
 
 def require_permission(*permissions: str, any_of: bool = True) -> Callable:
