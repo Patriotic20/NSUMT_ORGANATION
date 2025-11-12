@@ -2,6 +2,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
+from sqlalchemy import desc
 
 from core.models.quiz import Quiz
 from core.models.question_quiz import QuestionQuiz
@@ -132,6 +133,8 @@ class QuizService:
             count_stmt = count_stmt.where(Quiz.group_id == group_id)
         elif is_admin != "admin":
             count_stmt = count_stmt.where(Quiz.user_id == user_id)
+
+        stmt = stmt.order_by(desc(Quiz.id))
 
         total_result = await self.session.execute(count_stmt)
         total = total_result.scalar_one()
