@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.utils.basic_service import BasicService
 from .schemas import QuestionCreate, QuestionUpdate, QuestionBase
 from sqlalchemy import insert, select
-from sqlalchemy import func
+from sqlalchemy import func , desc
 from openpyxl import load_workbook
 from core.models.questions import Question
 from fastapi import HTTPException, status, UploadFile
@@ -98,10 +98,13 @@ class QuestionService:
         if is_admin != "admin":
             stmt = stmt.where(Question.user_id == user_id)
 
+        stmt = stmt.order_by(desc(Question.id))
+        
         # Count total correctly
         count_stmt = select(func.count(Question.id))
         if is_admin != "admin":
             count_stmt = count_stmt.where(Question.user_id == user_id)
+
 
         total_result = await self.session.execute(count_stmt)
         total = total_result.scalar_one()
