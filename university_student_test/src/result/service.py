@@ -65,6 +65,7 @@ class ResultService:
                 selectinload(Result.quiz),
             )
         )
+
         result = await self.session.execute(stmt)
         result_obj = result.scalar_one_or_none()
 
@@ -87,6 +88,8 @@ class ResultService:
         data = {
             "id": result_obj.id,
             "grade": result_obj.grade,
+            "correct": result_obj.correct_answers,
+            "incorrect": result_obj.incorrect_answers,
             "student": {
                 "id": result_obj.student_id,
                 "first_name": student_user.first_name if student_user else None,
@@ -210,36 +213,58 @@ class ResultService:
     async def get_all(
         self,
         user_id: int,
-        is_admin: Optional[str] = None,
+        is_admin: str | None = None,
         limit: int = 20,
         offset: int = 0
     ) -> dict[str, list[dict] | int]:
         """
-        Retrieve all results with pagination, including specific related fields.
+        Retrieve only the latest (most recent) result per student.
+        Admins see all, non-admins only their results.
         """
 
-        # Base query
-        stmt = select(Result).options(
-            selectinload(Result.student).selectinload(User.student),  
-            selectinload(Result.group),
-            selectinload(Result.subject),
-            selectinload(Result.quiz),
+        # --- STEP 1: Subquery: get latest created_at per student ---
+        latest_subq = (
+            select(
+                Result.student_id,
+                func.max(Result.created_at).label("latest_created_at")
+            )
+            .group_by(Result.student_id)
         )
 
-        # Non-admins see only their results
+        # --- STEP 2: Join subquery to main table to get full Result rows ---
+        stmt = (
+            select(Result)
+            .join(
+                latest_subq,
+                (Result.student_id == latest_subq.c.student_id)
+                & (Result.created_at == latest_subq.c.latest_created_at)
+            )
+            .options(
+                selectinload(Result.student).selectinload(User.student),
+                selectinload(Result.group),
+                selectinload(Result.subject),
+                selectinload(Result.quiz),
+            )
+            .order_by(Result.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+        )
+
+        # --- STEP 3: Filter for non-admin users ---
         if is_admin != "admin":
             stmt = stmt.where(Result.teacher_id == user_id)
 
-        # Total count efficiently
-        count_stmt = select(func.count(Result.id))
+        # --- STEP 4: Count how many unique students have results ---
+        count_stmt = (
+            select(func.count(func.distinct(Result.student_id)))
+        )
         if is_admin != "admin":
             count_stmt = count_stmt.where(Result.teacher_id == user_id)
 
         total_result = await self.session.execute(count_stmt)
-        total = total_result.scalar() or 0  # integer count
+        total = total_result.scalar() or 0
 
-        # Pagination
-        stmt = stmt.limit(limit).offset(offset)
+        # --- STEP 5: Execute main query ---
         result = await self.session.execute(stmt)
         results = result.scalars().all()
 
@@ -249,7 +274,7 @@ class ResultService:
                 detail="No results found"
             )
 
-        # Transform results to dict with required fields
+        # --- STEP 6: Transform into list of dicts ---
         data = []
         for r in results:
             student_user = r.student.student if r.student else None
@@ -257,6 +282,9 @@ class ResultService:
             item = {
                 "id": r.id,
                 "grade": r.grade,
+                "correct": r.correct_answers,
+                "incorrect": r.incorrect_answers,
+                "created_at": r.created_at.isoformat(),
                 "student": {
                     "id": r.student_id,
                     "first_name": student_user.first_name if student_user else None,
