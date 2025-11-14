@@ -2,7 +2,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy import select
 
-from fastapi import HTTPException, status
 from fastapi.security import  APIKeyHeader 
 
 from datetime import datetime, timezone, timedelta

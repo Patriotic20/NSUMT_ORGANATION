@@ -51,6 +51,4 @@ class StudentResponse(StudentBase):
 class StudentGet(BaseModel):
     
     id: int = Field(..., description="Unique ID of the student")
-    user_id: int| None = Field(None, description="Associated user ID")
-    group_id: int| None = Field(None, description="ID of the group the student belongs to")
 

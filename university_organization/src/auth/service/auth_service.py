@@ -21,87 +21,109 @@ class AuthService:
         self.session = session
 
     async def login(self, credentials: UserCredentials):
+        """
+        Foydalanuvchini tizimga kirishini amalga oshiradi.
+
+        Ushbu funksiya foydalanuvchini avvalo **mahalliy (local) ma'lumotlar bazasi** orqali
+        tekshiradi. Agar foydalanuvchi topilmasa yoki parol noto‘g‘ri bo‘lsa, tizim foydalanuvchini
+        **HEMIS** orqali autentifikatsiya qilishga harakat qiladi.
+
+        Ish jarayoni quyidagicha amalga oshadi:
+        1. `authenticate_user_from_db()` yordamida foydalanuvchini mahalliy bazadan qidiradi.
+           - Agar foydalanuvchi topilsa va parol to‘g‘ri bo‘lsa → JWT tokenlar (access va refresh) yaratiladi.
+        2. Agar foydalanuvchi topilmasa:
+           - `authenticate_user_with_hemis()` orqali HEMIS tizimida foydalanuvchi ma'lumotlari tekshiriladi.
+           - Agar HEMIS autentifikatsiya muvaffaqiyatli o‘tsa → foydalanuvchining ma'lumotlari
+             `StudentService.save_student_data_to_db()` yordamida mahalliy bazaga saqlanadi.
+        3. Saqlangandan so‘ng foydalanuvchi qaytadan bazadan olinadi (`authenticate_user_from_db` bilan)
+           va unga yangi tokenlar yaratiladi.
+
+        Xatolik holatlari:
+        - 401 (UNAUTHORIZED): Login yoki parol noto‘g‘ri bo‘lsa.
+        - 404 (NOT FOUND): HEMIS dan ma'lumot keldi, lekin foydalanuvchini bazada qayta topib bo‘lmasa.
+        - 500 (INTERNAL SERVER ERROR): Bazaga saqlashda yoki kutilmagan xatolik yuz bersa.
+
+        Parametrlar:
+            credentials (UserCredentials): Foydalanuvchining login va paroli.
+
+        Qaytaradi:
+            dict: Quyidagi ma'lumotlarni o‘z ichiga oladi:
+                - access_token: JWT access token
+                - refresh_token: JWT refresh token
+        """
+
         try:
-            # Try to authenticate locally first
-            user_data: User = await authenticate_user_from_db(
-                credentials=credentials, 
+
+            user_data: User | None = await authenticate_user_from_db(
+                credentials=credentials,
                 session=self.session
             )
 
             if user_data:
-                # Existing user found
                 roles = [role.name for role in user_data.roles]
                 data = {
                     "user_id": user_data.id,
                     "username": user_data.username,
-                    "role": roles,
+                    "role": roles
                 }
 
-            else:
-                # Try to authenticate with HEMIS if user not found locally
-                try:
-                    token = await authenticate_user_with_hemis(
-                        credentials=credentials, 
-                        session=self.session
-                    )
-                except Exception as e:
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail=f"Failed to authenticate with HEMIS: {str(e)}"
-                    )
+                return {
+                    "access_token": create_access_token(data=data),
+                    "refresh_token": create_refresh_token(data=data),
+                }
+            
+            try:
 
-                # Save student data from HEMIS
-                try:
-                    service = StudentService(session=self.session, token=token)
-                    student_data = await service.save_student_data_to_db()
-                except SQLAlchemyError as e:
-                    raise HTTPException(
-                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail=f"Database error while saving student data: {str(e)}"
-                    )
-
-                # Re-fetch the user after saving new data
-                user_data: User = await authenticate_user_from_db(
-                    credentials=credentials, 
+                token = await authenticate_user_with_hemis(
+                    credentials=credentials,
                     session=self.session
                 )
-
-                if not user_data:
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail="User data could not be retrieved after saving."
+            except Exception:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Login yoki parol noto'g'ri"
+                )
+            
+            try:
+                service = StudentService(session=self.session, token=token)
+                student_data = await service.save_student_data_to_db()
+            except SQLAlchemyError as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Ma'lumotlar bazasi xatosi: {str(e)}"                
                     )
+            user_data: User | None = await authenticate_user_from_db(
+                credentials=credentials,
+                session=self.session
+            )
 
-                roles = [role.name for role in user_data.roles]
-                data = {
-                    "user_id": student_data["user_id"],
-                    "username": student_data["username"],
-                    "group_id": student_data.get("group_id"),
-                    "role": roles,
-                }
+            if not user_data:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Foydalanuvchi ma'lumotlari topilmadi."
+                )
+            
+            roles = [role.name for role in user_data.roles]
+            data = {
+                "user_id": user_data.id,
+                "username": user_data.username,
+                "group_id": getattr(user_data.student, "group_id", None),
+                "role": roles,
+            }
 
             return {
                 "access_token": create_access_token(data=data),
                 "refresh_token": create_refresh_token(data=data),
             }
-
-        except SQLAlchemyError as e:
-            # General database exception
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Database error: {str(e)}"
-            )
-
+        
         except HTTPException:
-            # Re-raise HTTPExceptions we created above
-            raise
-
+            raise  # Let FastAPI handle HTTP exceptions
         except Exception as e:
-            # Catch-all for unexpected errors
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Unexpected error during login: {str(e)}"
+                detail=f"Kutilmagan xato: {str(e)}"
             )
+
 
 
 

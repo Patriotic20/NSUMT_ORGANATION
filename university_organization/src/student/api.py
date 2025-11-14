@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -23,20 +23,24 @@ def get_student_service(session: AsyncSession = Depends(db_helper.session_getter
 
 @router.get("")
 async def get_all(
+    search: str | None = Query(
+        None,
+        description="Qidiruv uchun matn (familiya, ism, otasining ismi yoki user_ID raqami bo‘yicha)"
+    ),
     pagination: GetAll = Depends(),
     service: StudentService = Depends(get_student_service),
     _: User = Depends(require_permission("read:students"))
     ):
-    return await service.get_all(pagination=pagination)
+    return await service.get_all(pagination=pagination, search=search)
 
 
 @router.get("/get/{id}", response_model=StudentResponse)
 async def get_by_id(
-    student_get: StudentGet = Depends(),
+    id: int = Path(..., description="Talabaning yagona ID raqami"),
     service: StudentService = Depends(get_student_service),
     _: User = Depends(require_permission("read:students"))
     ):
-    return await service.get_by_id(student_get=student_get)
+    return await service.get_by_id(student_get=id)
 
 
 @router.delete("/delete/{id}", response_model=StudentResponse)

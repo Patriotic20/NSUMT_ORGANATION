@@ -13,22 +13,31 @@ class StudentService:
         self.session = session
         self.service = BasicService(session=self.session)
         
-    async def get_by_id(self, student_get: StudentGet):
+    async def get_by_id(self, id: int):
         return await self.service.get(
             model=Student,
-            filters=[
-                Student.id == student_get.id,
-                Student.user_id == student_get.user_id,
-                Student.group_id == student_get.group_id
-            ],
+            filters=[Student.id == id],
             single=True
         )
     
-    async def get_all(self, pagination: GetAll):
+    async def get_all(
+            self,
+            pagination: GetAll,
+            search: str | None = None
+        ):
         return await self.service.get(
             model=Student,
+            search=search,
+            search_fields=[
+                "user_id",
+                "last_name", 
+                "third_name", 
+                "first_name", 
+                "student_id_number"
+            ],
             pagination=pagination
         )
+
         
         
     async def delete(self, student_get: StudentGet):
