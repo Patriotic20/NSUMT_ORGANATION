@@ -11,66 +11,30 @@ class QuizBase(BaseModel):
     group_id: int
     subject_id: int
     user_id: int
-    
+
     quiz_name: str
     question_number: int
     quiz_time: int
-    start_time: datetime = Field(default=DEFAULT_START_TIME)
+    start_time: datetime
     quiz_pin: str
     is_activate: bool | None = False
 
     @field_validator("start_time", mode="before")
-    def normalize_start_time(cls, v) -> datetime:
-        """
-        Convert input to naive datetime, strip seconds/microseconds,
-        and ensure it's not in the past.
-        """
-        # Convert from string if needed
+    def normalize_start_time(cls, v):
         if isinstance(v, str):
             v = datetime.fromisoformat(v)
 
         if not isinstance(v, datetime):
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="start_time must be a valid datetime"
-            )
+            raise ValueError("start_time must be a valid datetime")
 
-        # Make naive and round to minute
+        # remove seconds and microseconds
         v = v.replace(second=0, microsecond=0)
 
-        # Check not in the past
         now = datetime.now().replace(second=0, microsecond=0)
         if v < now:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="start_time cannot be in the past"
-            )
+            raise ValueError("start_time cannot be in the past")
+
         return v
-
-
-
-
-
-
-# class QuizInsert(QuizBase):
-#     end_time: datetime
-
-# class QuizResponse(QuizBase):
-#     id: int
-#     quiz_name: str
-#     user_id: int | None = None
-#     group_id: int | None = None
-#     question_number: int
-#     quiz_time: int
-#     start_time: datetime
-#     end_time: datetime
-#     quiz_pin: str
-
-#     model_config = ConfigDict(from_attributes=True)
-
-#     @field_serializer("start_time", "end_time", when_used="json")
-#     def serialize_dt(self, value: datetime) -> str:
-#         return value.strftime("%Y-%m-%d %H:%M:%S")
 
 
 class QuizUpdate(BaseModel):

@@ -21,19 +21,24 @@ class QuizService:
         self.basic_service = BasicService(session)
 
     async def create_quiz(self, quiz_data: QuizBase):
-        """Create a new quiz with calculated end time."""
-        created_quiz = await self.basic_service.create(model = Quiz, obj_items = quiz_data)
-
-        if not created_quiz:
-            raise HTTPException(
-                status_code=500,
-                detail="Failed to create quiz"
+        """Create quiz + attach correct number of questions."""
+        async with self.session.begin():
+            # create quiz
+            created_quiz = await self.basic_service.create(
+                model=Quiz,
+                obj_items=quiz_data
             )
 
-        await self.create_quiz_question(
-            user_id=quiz_data.user_id,
-            subject_id=quiz_data.subject_id
-        )
+            if not created_quiz:
+                raise HTTPException(500, "Failed to create quiz")
+
+            # attach questions
+            await self.create_quiz_questions(
+                quiz_id=created_quiz.id,
+                user_id=quiz_data.user_id,
+                subject_id=quiz_data.subject_id,
+                limit=quiz_data.question_number,
+            )
 
         return created_quiz
 
@@ -231,49 +236,46 @@ class QuizService:
         filters = [Quiz.id == quiz_id]
         return await self.basic_service.delete(model=Quiz, filters=filters)
 
-    async def create_quiz_question(self, user_id: int, subject_id: int):
-        """Create question-quiz links for the given user and subject."""
-        stmt = select(Question).where(
-            Question.user_id == user_id,
-            Question.subject_id == subject_id
-        )
-        questions = (await self.session.execute(stmt)).scalars().all()
+    async def create_quiz_questions(self, quiz_id: int, user_id: int, subject_id: int, limit: int):
+            """Attach limited number of unique questions to the quiz."""
 
-        if not questions:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No questions found for this subject"
+            # load questions for user + subject
+            stmt = select(Question).where(
+                Question.user_id == user_id,
+                Question.subject_id == subject_id
             )
+            questions = (await self.session.execute(stmt)).scalars().all()
 
-        stmt_quiz = select(Quiz).where(
-            Quiz.user_id == user_id,
-            Quiz.subject_id == subject_id
-        )
-        quiz = (await self.session.execute(stmt_quiz)).scalars().first()
+            if not questions:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No questions found for this subject"
+                )
 
-        if not quiz:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Quiz not found for this subject"
+            # limit number of questions
+            questions = questions[:limit]
+
+            # fetch already existing links
+            stmt_existing = select(QuestionQuiz.question_id).where(
+                QuestionQuiz.quiz_id == quiz_id
             )
+            existing_ids = set((await self.session.execute(stmt_existing)).scalars().all())
 
-        stmt_existing = select(QuestionQuiz.question_id).where(
-            QuestionQuiz.quiz_id == quiz.id
-        )
-        existing_ids = set((await self.session.execute(stmt_existing)).scalars().all())
+            # filter new questions
+            new_questions = [q for q in questions if q.id not in existing_ids]
 
-        new_questions = [q for q in questions if q.id not in existing_ids]
+            if not new_questions:
+                return {"created_links": 0}
 
+            # create new QuestionQuiz entries
+            new_links = [
+                QuestionQuiz(quiz_id=quiz_id, question_id=q.id)
+                for q in new_questions
+            ]
 
-        new_links = [
-            QuestionQuiz(quiz_id=quiz.id, question_id=q.id)
-            for q in new_questions
-        ]
+            self.session.add_all(new_links)
 
-        self.session.add_all(new_links)
-        await self.session.commit()
-
-        return {"created_links": len(new_links)}
+            return {"created_links": len(new_links)}
     
 
 
