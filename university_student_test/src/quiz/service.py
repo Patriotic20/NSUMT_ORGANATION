@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy import select, func
+from sqlalchemy import select, func, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from sqlalchemy import desc
@@ -8,6 +8,9 @@ from core.models.quiz import Quiz
 from core.models.question_quiz import QuestionQuiz
 from core.models.questions import Question
 from core.models.user import User
+from core.models.teacher import Teacher
+from core.models.group import Group
+from core.models.subject import Subject
 from core.utils.basic_service import BasicService
 from .schemas import QuizUpdate, QuizBase
 
@@ -106,12 +109,51 @@ class QuizService:
         user_id: int,
         is_admin: str | None = None,
         limit: int = 20,
+        search: str | None = None,
         offset: int = 0,
         group_id: int | None = None,
     ) -> dict:
         """Retrieve all quizzes with filters and pagination."""
-
-        # Base query with relationships
+        
+        # Helper function to build base filters
+        def apply_base_filters(stmt):
+            if group_id is not None:
+                stmt = stmt.where(Quiz.group_id == group_id)
+            elif is_admin != "admin":
+                stmt = stmt.where(Quiz.user_id == user_id)
+            return stmt
+        
+        # Helper function to apply search filters
+        def apply_search_filters(stmt):
+            if search:
+                stmt = (
+                    stmt
+                    .join(Quiz.user)
+                    .join(User.teacher)
+                    .join(Quiz.group)
+                    .join(Quiz.subject)
+                    .filter(
+                        or_(
+                            Teacher.first_name.ilike(f"%{search}%"),
+                            Teacher.last_name.ilike(f"%{search}%"),
+                            Teacher.patronymic.ilike(f"%{search}%"),
+                            Group.name.ilike(f"%{search}%"),
+                            Subject.name.ilike(f"%{search}%")
+                        )
+                    )
+                )
+            return stmt
+        
+        # Build count query with all filters
+        count_stmt = select(func.count(Quiz.id))
+        count_stmt = apply_base_filters(count_stmt)
+        count_stmt = apply_search_filters(count_stmt)
+        
+        # Execute count query
+        total_result = await self.session.execute(count_stmt)
+        total = total_result.scalar_one()
+        
+        # Build main query
         stmt = (
             select(Quiz)
             .options(
@@ -120,54 +162,39 @@ class QuizService:
                 selectinload(Quiz.subject),
             )
         )
-
-        # Apply filters
-        if group_id is not None:
-            stmt = stmt.where(Quiz.group_id == group_id)
-        elif is_admin != "admin":
-            stmt = stmt.where(Quiz.user_id == user_id)
-
-        # Total count (for pagination)
-        count_stmt = select(func.count(Quiz.id))
-        if group_id is not None:
-            count_stmt = count_stmt.where(Quiz.group_id == group_id)
-        elif is_admin != "admin":
-            count_stmt = count_stmt.where(Quiz.user_id == user_id)
-
-        stmt = stmt.order_by(desc(Quiz.id))
-
-        total_result = await self.session.execute(count_stmt)
-        total = total_result.scalar_one()
-
-        # Pagination
-        stmt = stmt.limit(limit).offset(offset)
+        
+        # Apply all filters
+        stmt = apply_base_filters(stmt)
+        stmt = apply_search_filters(stmt)
+        
+        # Apply ordering and pagination
+        stmt = stmt.order_by(desc(Quiz.id)).limit(limit).offset(offset)
+        
+        # Execute main query
         result = await self.session.execute(stmt)
         quizzes = result.scalars().all()
-
-        # Format data
-        data = []
-        for quiz in quizzes:
-            teacher = getattr(quiz.user, "teacher", None)
-            group = getattr(quiz, "group", None)
-            subject = getattr(quiz, "subject", None)
-
-            data.append({
+        
+        # Format data (optimized)
+        data = [
+            {
                 "quiz_id": quiz.id,
                 "quiz_name": quiz.quiz_name,
                 "quiz_pin": quiz.quiz_pin,
                 "user_id": quiz.user_id,
-                "teacher_first_name": getattr(teacher, "first_name", None),
-                "teacher_last_name": getattr(teacher, "last_name", None),
-                "group_id": getattr(group, "id", None),
-                "group_name": getattr(group, "name", None),
-                "subject_id": getattr(subject, "id", None),
-                "subject_name": getattr(subject, "name", None),
+                "teacher_first_name": quiz.user.teacher.first_name if quiz.user and quiz.user.teacher else None,
+                "teacher_last_name": quiz.user.teacher.last_name if quiz.user and quiz.user.teacher else None,
+                "group_id": quiz.group.id if quiz.group else None,
+                "group_name": quiz.group.name if quiz.group else None,
+                "subject_id": quiz.subject.id if quiz.subject else None,
+                "subject_name": quiz.subject.name if quiz.subject else None,
                 "question_number": quiz.question_number,
                 "duration": quiz.quiz_time,
                 "start_time": quiz.start_time,
                 "activate": quiz.is_activate
-            })
-
+            }
+            for quiz in quizzes
+        ]
+        
         return {
             "total": total,
             "limit": limit,

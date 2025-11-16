@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import Query, Path
 
 from .service import QuizService
 from .schemas import QuizBase, QuizUpdate
@@ -51,20 +52,21 @@ async def get_by_id(
     )
 
 
-@router.get("")
+@router.get("")  # Add response model
 async def get_all(
-    limit: int = 20,
-    offset: int = 0,
+    limit: int = Query(20, ge=1, le=100),  
+    offset: int = Query(0, ge=0),
+    search: str | None = Query(None, max_length=100),  
     service: QuizService = Depends(get_quiz_service),
     current_user: TokenPaylod = Depends(require_permission("read:quiz")),
 ):
     """Retrieve all quizzes with pagination."""
-
     return await service.get_all_quiz(
         user_id=current_user.user_id,
         is_admin=current_user.role,
         limit=limit,
         offset=offset,
+        search=search,  
         group_id=current_user.group_id,
     )
 
