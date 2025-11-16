@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 from fastapi import HTTPException, status
-from sqlalchemy import select 
+
 
 
 
@@ -9,10 +9,9 @@ from auth.schemas.student import StudentCreate
 from auth.utils.request_hemis import fetch_hemis_data
 from auth.utils.security import get_user
 from core.config import settings
-from core.models import Student, User, Group
+from core.models import Student, User
 from core.utils.service import BasicService
 from auth.utils.faculty_group import group_create_check
-from core.utils.normalize_type_name import normalize_type_name
 
 
 class StudentService:

@@ -36,6 +36,7 @@ async def authenticate_user_with_hemis(
 
 
         
+
 async def authenticate_user_from_db(
     credentials: UserCredentials,
     session: AsyncSession
@@ -43,13 +44,10 @@ async def authenticate_user_from_db(
     user_data = await get_user(
         session=session, 
         username=credentials.username
-        )
-    
+    )
     if not user_data:
         return False
-    
-    if not verify_password(plain_password=credentials.password , hashed_password=user_data.password):
+    if not verify_password(plain_password=credentials.password, hashed_password=user_data.password):
         return False
-    
     return user_data
     

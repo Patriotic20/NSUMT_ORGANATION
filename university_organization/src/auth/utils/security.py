@@ -33,12 +33,12 @@ async def get_user(session: AsyncSession, username: str):
         select(User)
         .where(User.username == username)
         .options(
-            selectinload(User.roles).selectinload(Role.permissions)
+            selectinload(User.roles).selectinload(Role.permissions),
+            selectinload(User.student)  
         )
     )
     result = await session.execute(stmt)
     user_data = result.scalars().first()
-    
     return user_data
 
 

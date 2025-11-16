@@ -39,4 +39,4 @@ async def refresh_token(
     refresh_token: RefreshToken = Depends(),
     service: AuthService = Depends(get_auth_service)
 ):
-    return service.refresh(refresh_token=refresh_token)
+    return await service.refresh(refresh_token=refresh_token)

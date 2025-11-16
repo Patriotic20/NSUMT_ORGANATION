@@ -23,42 +23,36 @@ class AuthService:
     async def login(self, credentials: UserCredentials):
         """
         Foydalanuvchini tizimga kirishini amalga oshiradi.
-
         Ushbu funksiya foydalanuvchini avvalo **mahalliy (local) ma'lumotlar bazasi** orqali
-        tekshiradi. Agar foydalanuvchi topilmasa yoki parol noto‘g‘ri bo‘lsa, tizim foydalanuvchini
+        tekshiradi. Agar foydalanuvchi topilmasa yoki parol noto'g'ri bo'lsa, tizim foydalanuvchini
         **HEMIS** orqali autentifikatsiya qilishga harakat qiladi.
-
         Ish jarayoni quyidagicha amalga oshadi:
         1. `authenticate_user_from_db()` yordamida foydalanuvchini mahalliy bazadan qidiradi.
-           - Agar foydalanuvchi topilsa va parol to‘g‘ri bo‘lsa → JWT tokenlar (access va refresh) yaratiladi.
+        - Agar foydalanuvchi topilsa va parol to'g'ri bo'lsa → JWT tokenlar (access va refresh) yaratiladi.
         2. Agar foydalanuvchi topilmasa:
-           - `authenticate_user_with_hemis()` orqali HEMIS tizimida foydalanuvchi ma'lumotlari tekshiriladi.
-           - Agar HEMIS autentifikatsiya muvaffaqiyatli o‘tsa → foydalanuvchining ma'lumotlari
-             `StudentService.save_student_data_to_db()` yordamida mahalliy bazaga saqlanadi.
-        3. Saqlangandan so‘ng foydalanuvchi qaytadan bazadan olinadi (`authenticate_user_from_db` bilan)
-           va unga yangi tokenlar yaratiladi.
-
+        - `authenticate_user_with_hemis()` orqali HEMIS tizimida foydalanuvchi ma'lumotlari tekshiriladi.
+        - Agar HEMIS autentifikatsiya muvaffaqiyatli o'tsa → foydalanuvchining ma'lumotlari
+            `StudentService.save_student_data_to_db()` yordamida mahalliy bazaga saqlanadi.
+        3. Saqlangandan so'ng foydalanuvchi qaytadan bazadan olinadi `authenticate_user_from_db` bilan)
+        va unga yangi tokenlar yaratiladi.
         Xatolik holatlari:
-        - 401 (UNAUTHORIZED): Login yoki parol noto‘g‘ri bo‘lsa.
-        - 404 (NOT FOUND): HEMIS dan ma'lumot keldi, lekin foydalanuvchini bazada qayta topib bo‘lmasa.
+        - 401 (UNAUTHORIZED): Login yoki parol noto'g'ri bo'lsa.
+        - 404 (NOT FOUND): HEMIS dan ma'lumot keldi, lekin foydalanuvchini bazada qayta topib bo'lmasa.
         - 500 (INTERNAL SERVER ERROR): Bazaga saqlashda yoki kutilmagan xatolik yuz bersa.
-
         Parametrlar:
             credentials (UserCredentials): Foydalanuvchining login va paroli.
-
         Qaytaradi:
-            dict: Quyidagi ma'lumotlarni o‘z ichiga oladi:
+            dict: Quyidagi ma'lumotlarni o'z ichiga oladi:
                 - access_token: JWT access token
                 - refresh_token: JWT refresh token
         """
-
+        
         try:
-
             user_data: User | None = await authenticate_user_from_db(
                 credentials=credentials,
                 session=self.session
             )
-
+            
             if user_data:
                 roles = [role.name for role in user_data.roles]
                 data = {
@@ -66,14 +60,12 @@ class AuthService:
                     "username": user_data.username,
                     "role": roles
                 }
-
                 return {
                     "access_token": create_access_token(data=data),
                     "refresh_token": create_refresh_token(data=data),
                 }
             
             try:
-
                 token = await authenticate_user_with_hemis(
                     credentials=credentials,
                     session=self.session
@@ -86,17 +78,18 @@ class AuthService:
             
             try:
                 service = StudentService(session=self.session, token=token)
-                student_data = await service.save_student_data_to_db()
+                await service.save_student_data_to_db()
             except SQLAlchemyError as e:
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail=f"Ma'lumotlar bazasi xatosi: {str(e)}"                
-                    )
+                    detail=f"Ma'lumotlar bazasi xatosi: {str(e)}"
+                )
+            
             user_data: User | None = await authenticate_user_from_db(
                 credentials=credentials,
                 session=self.session
             )
-
+            
             if not user_data:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
@@ -104,29 +97,31 @@ class AuthService:
                 )
             
             roles = [role.name for role in user_data.roles]
+            
+            # Fixed: Check if student exists before accessing group_id
+            group_id = None
+            if user_data.student:
+                group_id = user_data.student.group_id
+            
             data = {
                 "user_id": user_data.id,
                 "username": user_data.username,
-                "group_id": getattr(user_data.student, "group_id", None),
+                "group_id": group_id,
                 "role": roles,
             }
-
+            
             return {
                 "access_token": create_access_token(data=data),
                 "refresh_token": create_refresh_token(data=data),
             }
         
         except HTTPException:
-            raise  # Let FastAPI handle HTTP exceptions
+            raise  # Re-raise HTTP exceptions
         except Exception as e:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Kutilmagan xato: {str(e)}"
             )
-
-
-
-
 
     async def register(self, credentials: UserCredentials):
         hashed_password = hash_password(password=credentials.password)
