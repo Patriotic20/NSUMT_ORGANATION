@@ -1,6 +1,6 @@
 from typing import Generic, TypeVar, Type, Any, Optional, TypeAlias
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, update, delete, func, desc, or_
+from sqlalchemy import select, and_, update, delete, func, desc, or_, cast, String
 from sqlalchemy.exc import SQLAlchemyError
 from pydantic import BaseModel
 from sqlalchemy.sql.elements import ColumnElement
@@ -18,6 +18,19 @@ FilterList: TypeAlias = Optional[list[ColumnElement[bool]]]
 class BasicService(Generic[ModelType, SchemaType]):
     def __init__(self, session: AsyncSession):
         self.session = session
+
+
+    def _is_text_column(self, column) -> bool:
+        """
+        Check if a column is a text/string type that supports ILIKE natively
+        """
+        try:
+            column_type = str(column.type).upper()
+            return any(text_type in column_type for text_type in [
+                'VARCHAR', 'TEXT', 'CHAR', 'STRING'
+            ])
+        except Exception:
+            return False
 
     
     @staticmethod
@@ -81,7 +94,14 @@ class BasicService(Generic[ModelType, SchemaType]):
                     for field_name in search_fields:
                         if hasattr(model, field_name):
                             field = getattr(model, field_name)
-                            search_clauses.append(field.ilike(f"%{search}%"))
+
+
+                            if self._is_text_column(field):
+                                search_clauses.append(field.ilike(f"%{search}%"))
+                            else:
+                                search_clauses.append(
+                                    cast(field, String).like(f"%{search}%")   
+                                )
                     if search_clauses:
                         stmt = stmt.where(or_(*search_clauses))
 
