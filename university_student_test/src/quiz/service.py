@@ -138,7 +138,8 @@ class QuizService:
                             Teacher.last_name.ilike(f"%{search}%"),
                             Teacher.patronymic.ilike(f"%{search}%"),
                             Group.name.ilike(f"%{search}%"),
-                            Subject.name.ilike(f"%{search}%")
+                            Subject.name.ilike(f"%{search}%"),
+                            Quiz.quiz_name.ilike(f"%{search}%")
                         )
                     )
                 )
