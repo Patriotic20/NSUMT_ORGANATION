@@ -23,24 +23,21 @@ class QuizService:
     async def create_quiz(self, quiz_data: QuizBase):
         """Create quiz + attach correct number of questions."""
         async with self.session.begin():
-            # create quiz
             created_quiz = await self.basic_service.create(
                 model=Quiz,
                 obj_items=quiz_data
             )
-
             if not created_quiz:
                 raise HTTPException(500, "Failed to create quiz")
-
-            # attach questions
+            
             await self.create_quiz_questions(
                 quiz_id=created_quiz.id,
                 user_id=quiz_data.user_id,
                 subject_id=quiz_data.subject_id,
                 limit=quiz_data.question_number,
             )
-
-        return created_quiz
+            # Transaction commits automatically at end of context
+            return created_quiz
 
 
 

@@ -26,7 +26,7 @@ class BasicService(Generic[ModelType, SchemaType]):
             log.debug(f"Creating {model.__name__} with data: {obj_items}")
             db_obj = model(**obj_items.model_dump())
             self.db.add(db_obj)
-            await self.db.commit()
+            await self.db.flush()
             await self.db.refresh(db_obj)
             log.info(f"{model.__name__} created with ID: {getattr(db_obj, 'id', None)}")
             return db_obj
