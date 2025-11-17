@@ -24,7 +24,7 @@ class QuizService:
         """Create quiz + attach correct number of questions."""
         try:
             # Create quiz (without committing)
-            created_quiz = await self.basic_service.create_no_commit(
+            created_quiz = await self.basic_service.create(
                 model=Quiz,
                 obj_items=quiz_data
             )
