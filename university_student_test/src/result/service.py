@@ -113,101 +113,70 @@ class ResultService:
         return data
 
     
-    async def get_by_filed(
+    async def get_by_field(
         self,
-        student_id: int | None = None,
-        teacher_id: int | None = None,
-        group_id: int | None = None,
-        subject_id: int | None = None,
         quiz_id: int | None = None,
     ) -> list[dict]:
         """
-        Group results by student_id and return structured data.
+        Get all students assigned to a quiz with their results.
         """
 
-        # Base query — we’ll group by student
         stmt = (
-            select(
-                Result.student_id,
-                func.array_agg(Result.id).label("result_ids")  # Collect all result IDs for each student
+            select(Result)
+            .options(
+                selectinload(Result.student).selectinload(User.student),
+                selectinload(Result.group),
+                selectinload(Result.subject),
+                selectinload(Result.quiz),
             )
         )
-
-        # Apply filters
-        if student_id:
-            stmt = stmt.where(Result.student_id == student_id)
-        if teacher_id:
-            stmt = stmt.where(Result.teacher_id == teacher_id)
-        if group_id:
-            stmt = stmt.where(Result.group_id == group_id)
-        if subject_id:
-            stmt = stmt.where(Result.subject_id == subject_id)
+        
         if quiz_id:
             stmt = stmt.where(Result.quiz_id == quiz_id)
-
-        # Group by student_id
-        stmt = stmt.group_by(Result.student_id)
-
-        # Execute
+        
+        # Execute query
         result = await self.session.execute(stmt)
-        grouped_rows = result.all()
-
-        if not grouped_rows:
+        results = result.scalars().all()
+        
+        if not results:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No results found"
             )
-
+        
+        # Build response data
         data = []
-
-        # For each student_id, load details (name, group, subject, quiz)
-        for row in grouped_rows:
-            student_id = row.student_id
-            result_ids = row.result_ids
-
-            # Fetch one result to get related objects (group, subject, etc.)
-            detail_stmt = (
-                select(Result)
-                .where(Result.id.in_(result_ids))
-                .options(
-                    selectinload(Result.student).selectinload(User.student),
-                    selectinload(Result.group),
-                    selectinload(Result.subject),
-                    selectinload(Result.quiz),
-                )
-            )
-
-            details_result = await self.session.execute(detail_stmt)
-            results = details_result.scalars().all()
-
-            # Use first result for student/group/subject/quiz data (since all same student)
-            first = results[0]
-            student_user = first.student.student if first.student else None
-
+        for res in results:
+            student_user = res.student.student if res.student else None
+            
             item = {
                 "student": {
-                    "id": first.student_id,
+                    "id": res.student_id,
                     "first_name": student_user.first_name if student_user else None,
                     "last_name": student_user.last_name if student_user else None,
                     "third_name": student_user.third_name if student_user else None,
-                } if first.student else None,
+                } if res.student else None,
                 "group": {
-                    "id": first.group_id,
-                    "name": first.group.name
-                } if first.group else None,
+                    "id": res.group_id,
+                    "name": res.group.name
+                } if res.group else None,
                 "subject": {
-                    "id": first.subject_id,
-                    "name": first.subject.name
-                } if first.subject else None,
+                    "id": res.subject_id,
+                    "name": res.subject.name
+                } if res.subject else None,
                 "quiz": {
-                    "id": first.quiz_id,
-                    "name": first.quiz.quiz_name
-                } if first.quiz else None,
-                "result_ids": result_ids,
+                    "id": res.quiz_id,
+                    "name": res.quiz.quiz_name
+                } if res.quiz else None,
+                "result": {
+                    "id": res.id,
+                    "correct_answers": res.correct_answers,
+                    "incorrect_answers": res.incorrect_answers,
+                    "grade": res.grade,
+                }
             }
-
             data.append(item)
-
+        
         return data
 
     async def get_all(
