@@ -26,9 +26,8 @@ class QuizProcessService:
         user_id: int,
         group_id: int | None = None
     ) -> dict:
-        """Fetch quiz questions for a given quiz ID, PIN, and group."""
 
-        # Fetch student and roles
+        # Fetch student + roles
         student_stmt = (
             select(User)
             .where(User.id == user_id)
@@ -37,31 +36,21 @@ class QuizProcessService:
                 selectinload(User.roles)
             )
         )
-        student_result = await self.session.execute(student_stmt)
-        student_info: User | None = student_result.scalars().first()
+        student = (await self.session.execute(student_stmt)).scalars().first()
 
-        if not student_info or not student_info.roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="User information or roles missing."
-            )
+        if not student or not student.roles:
+            raise HTTPException(status_code=403, detail="User information or roles missing.")
 
-        # Determine user group
-        role_name = student_info.roles[0].name
+        # Determine group
+        role_name = student.roles[0].name
         if role_name == "admin":
             if not group_id:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Group ID is required for admin users."
-                )
+                raise HTTPException(status_code=400, detail="Group ID required for admin.")
             target_group_id = group_id
         else:
-            if not student_info.student:
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="User is not a student."
-                )
-            target_group_id = student_info.student.group_id
+            if not student.student:
+                raise HTTPException(status_code=403, detail="User is not a student.")
+            target_group_id = student.student.group_id
 
         # Fetch quiz
         quiz_stmt = (
@@ -69,78 +58,58 @@ class QuizProcessService:
             .where(
                 Quiz.id == quiz_id,
                 Quiz.quiz_pin == quiz_pin,
-                Quiz.group_id == target_group_id,
+                Quiz.group_id == target_group_id
             )
             .options(
                 selectinload(Quiz.user).selectinload(User.teacher),
                 selectinload(Quiz.group),
-                selectinload(Quiz.subject),
+                selectinload(Quiz.subject)
             )
         )
-        quiz_result = await self.session.execute(quiz_stmt)
-        quiz: Quiz | None = quiz_result.scalars().first()
+        quiz = (await self.session.execute(quiz_stmt)).scalars().first()
 
         if not quiz:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Quiz not found or inaccessible."
-            )
-        
+            raise HTTPException(status_code=404, detail="Quiz not found or inaccessible.")
+
         if not quiz.is_activate:
-            raise HTTPException(
-                status_code=status.HTTP_405_METHOD_NOT_ALLOWED,
-                detail="Test is not active."
-            )
+            raise HTTPException(status_code=405, detail="Test is not active.")
 
         # Time validation
         tz = ZoneInfo("Asia/Tashkent")
         now = datetime.now(tz)
+
         start_time = quiz.start_time.replace(tzinfo=tz)
-
-
         if now < start_time:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Test has not started yet.",
-            )
+            raise HTTPException(status_code=403, detail="Test has not started yet.")
 
-        
-        # Fetch questions
+        # ================================
+        # FIXED: Fetch questions BY QUIZ
+        # ================================
         stmt_questions = (
             select(Question)
-            .where(
-                Question.user_id == quiz.user_id,
-                Question.subject_id == quiz.subject_id,
-            )
+            .where(Question.quiz_id == quiz.id)
             .order_by(func.random())
             .limit(quiz.question_number)
         )
-        result = await self.session.execute(stmt_questions)
-        questions = result.scalars().all()
-
+        questions = (await self.session.execute(stmt_questions)).scalars().all()
 
         if not questions:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="No questions available for this quiz."
-            )
+            raise HTTPException(status_code=404, detail="No questions for this quiz.")
 
-        # Prepare response
         teacher = getattr(quiz.user, "teacher", None)
-        group = getattr(quiz, "group", None)
-        subject = getattr(quiz, "subject", None)
 
         return {
             "user_id": quiz.user_id,
             "teacher_first_name": getattr(teacher, "first_name", None),
             "teacher_last_name": getattr(teacher, "last_name", None),
-            "group_id": getattr(group, "id", None),
-            "group_name": getattr(group, "name", None),
-            "subject_id": getattr(subject, "id", None),
-            "subject_name": getattr(subject, "name", None),
+            "group_id": quiz.group.id if quiz.group else None,
+            "group_name": quiz.group.name if quiz.group else None,
+            "subject_id": quiz.subject.id if quiz.subject else None,
+            "subject_name": quiz.subject.name if quiz.subject else None,
             "duration": quiz.quiz_time,
-            "questions": [q.to_dict(randomize_options=True) for q in questions],
+            "questions": [q.to_dict(randomize_options=True) for q in questions]
         }
+
 
 
     
