@@ -221,7 +221,6 @@ class ResultService:
         Retrieve only the latest (most recent) result per student.
         Admins see all, non-admins only their results.
         """
-
         # --- STEP 1: Subquery: get latest created_at per student ---
         latest_subq = (
             select(
@@ -229,8 +228,9 @@ class ResultService:
                 func.max(Result.created_at).label("latest_created_at")
             )
             .group_by(Result.student_id)
+            .subquery()  # ✅ ADD THIS!
         )
-
+        
         # --- STEP 2: Join subquery to main table to get full Result rows ---
         stmt = (
             select(Result)
@@ -249,36 +249,34 @@ class ResultService:
             .limit(limit)
             .offset(offset)
         )
-
+        
         # --- STEP 3: Filter for non-admin users ---
         if is_admin != "admin":
             stmt = stmt.where(Result.teacher_id == user_id)
-
+        
         # --- STEP 4: Count how many unique students have results ---
-        count_stmt = (
-            select(func.count(func.distinct(Result.student_id)))
-        )
+        count_stmt = select(func.count(func.distinct(Result.student_id)))
+        
         if is_admin != "admin":
             count_stmt = count_stmt.where(Result.teacher_id == user_id)
-
+        
         total_result = await self.session.execute(count_stmt)
         total = total_result.scalar() or 0
-
+        
         # --- STEP 5: Execute main query ---
         result = await self.session.execute(stmt)
         results = result.scalars().all()
-
+        
         if not results:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No results found"
             )
-
+        
         # --- STEP 6: Transform into list of dicts ---
         data = []
         for r in results:
             student_user = r.student.student if r.student else None
-
             item = {
                 "id": r.id,
                 "grade": r.grade,
@@ -305,7 +303,7 @@ class ResultService:
                 } if r.quiz else None,
             }
             data.append(item)
-
+        
         return {"total": total, "data": data}
     
 
