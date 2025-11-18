@@ -1,6 +1,6 @@
 from typing import Optional
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from core.models.results import Result
 from core.models.user_answer import UserAnswer
@@ -120,7 +120,6 @@ class ResultService:
         """
         Get the last result for each student assigned to a quiz.
         """
-        
         # Subquery to get the latest result ID for each student
         subquery = (
             select(
@@ -135,13 +134,15 @@ class ResultService:
         
         subquery = subquery.subquery()
         
-        # Main query to get full result data for latest results only
+        # Main query
         stmt = (
             select(Result)
             .join(
                 subquery,
-                (Result.student_id == subquery.c.student_id) &
-                (Result.id == subquery.c.max_id)
+                and_(
+                    Result.student_id == subquery.c.student_id,
+                    Result.id == subquery.c.max_id
+                )
             )
             .options(
                 selectinload(Result.student).selectinload(User.student),
@@ -149,11 +150,10 @@ class ResultService:
                 selectinload(Result.subject),
                 selectinload(Result.quiz),
             )
-            .distinct()
         )
         
-        # Execute query
         result = await self.session.execute(stmt)
+        # Use unique() BEFORE scalars() to remove duplicates from eager loading
         results = result.unique().scalars().all()
         
         if not results:
@@ -161,6 +161,8 @@ class ResultService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No results found"
             )
+    
+        return results
 
     async def get_all(
         self,
