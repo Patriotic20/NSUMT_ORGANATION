@@ -118,66 +118,49 @@ class ResultService:
         quiz_id: int | None = None,
     ) -> list[dict]:
         """
-        Get all students assigned to a quiz with their results.
+        Get the last result for each student assigned to a quiz.
         """
-
+        
+        # Subquery to get the latest result ID for each student
+        subquery = (
+            select(
+                Result.student_id,
+                func.max(Result.id).label('max_id')
+            )
+            .group_by(Result.student_id)
+        )
+        
+        if quiz_id:
+            subquery = subquery.where(Result.quiz_id == quiz_id)
+        
+        subquery = subquery.subquery()
+        
+        # Main query to get full result data for latest results only
         stmt = (
             select(Result)
+            .join(
+                subquery,
+                (Result.student_id == subquery.c.student_id) &
+                (Result.id == subquery.c.max_id)
+            )
             .options(
                 selectinload(Result.student).selectinload(User.student),
                 selectinload(Result.group),
                 selectinload(Result.subject),
                 selectinload(Result.quiz),
             )
+            .distinct()
         )
-        
-        if quiz_id:
-            stmt = stmt.where(Result.quiz_id == quiz_id)
         
         # Execute query
         result = await self.session.execute(stmt)
-        results = result.scalars().all()
+        results = result.unique().scalars().all()
         
         if not results:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No results found"
             )
-        
-        # Build response data
-        data = []
-        for res in results:
-            student_user = res.student.student if res.student else None
-            
-            item = {
-                "student": {
-                    "id": res.student_id,
-                    "first_name": student_user.first_name if student_user else None,
-                    "last_name": student_user.last_name if student_user else None,
-                    "third_name": student_user.third_name if student_user else None,
-                } if res.student else None,
-                "group": {
-                    "id": res.group_id,
-                    "name": res.group.name
-                } if res.group else None,
-                "subject": {
-                    "id": res.subject_id,
-                    "name": res.subject.name
-                } if res.subject else None,
-                "quiz": {
-                    "id": res.quiz_id,
-                    "name": res.quiz.quiz_name
-                } if res.quiz else None,
-                "result": {
-                    "id": res.id,
-                    "correct_answers": res.correct_answers,
-                    "incorrect_answers": res.incorrect_answers,
-                    "grade": res.grade,
-                }
-            }
-            data.append(item)
-        
-        return data
 
     async def get_all(
         self,
