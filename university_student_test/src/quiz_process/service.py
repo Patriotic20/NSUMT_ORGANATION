@@ -6,6 +6,7 @@ from sqlalchemy.orm import selectinload
 from .schemas import ResultCreate , QuizSubmission, UserAnswerCreate
 from core.models.user import User
 from core.models.user_answer import UserAnswer
+from core.models.question_quiz import QuestionQuiz
 
 from core.utils.basic_service import BasicService
 from core.models import Quiz , Question , Result
@@ -19,96 +20,91 @@ class QuizProcessService:
         self.service = BasicService(self.session)
 
 
-    async def start_quiz(
-        self,
-        quiz_id: int,
-        quiz_pin: str,
-        user_id: int,
-        group_id: int | None = None
-    ) -> dict:
-
-        # Fetch student + roles
-        student_stmt = (
-            select(User)
-            .where(User.id == user_id)
-            .options(
-                selectinload(User.student),
-                selectinload(User.roles)
-            )
+async def start_quiz(
+    self,
+    quiz_id: int,
+    quiz_pin: str,
+    user_id: int,
+    group_id: int | None = None
+) -> dict:
+    # Fetch student + roles
+    student_stmt = (
+        select(User)
+        .where(User.id == user_id)
+        .options(
+            selectinload(User.student),
+            selectinload(User.roles)
         )
-        student = (await self.session.execute(student_stmt)).scalars().first()
-
-        if not student or not student.roles:
-            raise HTTPException(status_code=403, detail="User information or roles missing.")
-
-        # Determine group
-        role_name = student.roles[0].name
-        if role_name == "admin":
-            if not group_id:
-                raise HTTPException(status_code=400, detail="Group ID required for admin.")
-            target_group_id = group_id
-        else:
-            if not student.student:
-                raise HTTPException(status_code=403, detail="User is not a student.")
-            target_group_id = student.student.group_id
-
-        # Fetch quiz
-        quiz_stmt = (
-            select(Quiz)
-            .where(
-                Quiz.id == quiz_id,
-                Quiz.quiz_pin == quiz_pin,
-                Quiz.group_id == target_group_id
-            )
-            .options(
-                selectinload(Quiz.user).selectinload(User.teacher),
-                selectinload(Quiz.group),
-                selectinload(Quiz.subject)
-            )
+    )
+    student = (await self.session.execute(student_stmt)).scalars().first()
+    if not student or not student.roles:
+        raise HTTPException(status_code=403, detail="User information or roles missing.")
+    
+    # Determine group
+    role_name = student.roles[0].name
+    if role_name == "admin":
+        if not group_id:
+            raise HTTPException(status_code=400, detail="Group ID required for admin.")
+        target_group_id = group_id
+    else:
+        if not student.student:
+            raise HTTPException(status_code=403, detail="User is not a student.")
+        target_group_id = student.student.group_id
+    
+    # Fetch quiz
+    quiz_stmt = (
+        select(Quiz)
+        .where(
+            Quiz.id == quiz_id,
+            Quiz.quiz_pin == quiz_pin,
+            Quiz.group_id == target_group_id
         )
-        quiz = (await self.session.execute(quiz_stmt)).scalars().first()
-
-        if not quiz:
-            raise HTTPException(status_code=404, detail="Quiz not found or inaccessible.")
-
-        if not quiz.is_activate:
-            raise HTTPException(status_code=405, detail="Test is not active.")
-
-        # Time validation
-        tz = ZoneInfo("Asia/Tashkent")
-        now = datetime.now(tz)
-
-        start_time = quiz.start_time.replace(tzinfo=tz)
-        if now < start_time:
-            raise HTTPException(status_code=403, detail="Test has not started yet.")
-
-        # ================================
-        # FIXED: Fetch questions BY QUIZ
-        # ================================
-        stmt_questions = (
-            select(Question)
-            .where(Question.quiz_id == quiz.id)
-            .order_by(func.random())
-            .limit(quiz.question_number)
+        .options(
+            selectinload(Quiz.user).selectinload(User.teacher),
+            selectinload(Quiz.group),
+            selectinload(Quiz.subject)
         )
-        questions = (await self.session.execute(stmt_questions)).scalars().all()
-
-        if not questions:
-            raise HTTPException(status_code=404, detail="No questions for this quiz.")
-
-        teacher = getattr(quiz.user, "teacher", None)
-
-        return {
-            "user_id": quiz.user_id,
-            "teacher_first_name": getattr(teacher, "first_name", None),
-            "teacher_last_name": getattr(teacher, "last_name", None),
-            "group_id": quiz.group.id if quiz.group else None,
-            "group_name": quiz.group.name if quiz.group else None,
-            "subject_id": quiz.subject.id if quiz.subject else None,
-            "subject_name": quiz.subject.name if quiz.subject else None,
-            "duration": quiz.quiz_time,
-            "questions": [q.to_dict(randomize_options=True) for q in questions]
-        }
+    )
+    quiz = (await self.session.execute(quiz_stmt)).scalars().first()
+    if not quiz:
+        raise HTTPException(status_code=404, detail="Quiz not found or inaccessible.")
+    if not quiz.is_activate:
+        raise HTTPException(status_code=405, detail="Test is not active.")
+    
+    # Time validation
+    tz = ZoneInfo("Asia/Tashkent")
+    now = datetime.now(tz)
+    start_time = quiz.start_time.replace(tzinfo=tz)
+    if now < start_time:
+        raise HTTPException(status_code=403, detail="Test has not started yet.")
+    
+    # ================================
+    # FIXED: Fetch questions through QuestionQuiz junction table
+    # ================================
+    stmt_questions = (
+        select(Question)
+        .join(QuestionQuiz, QuestionQuiz.question_id == Question.id)
+        .where(QuestionQuiz.quiz_id == quiz.id)
+        .order_by(func.random())
+        .limit(quiz.question_number)
+    )
+    questions = (await self.session.execute(stmt_questions)).scalars().all()
+    
+    if not questions:
+        raise HTTPException(status_code=404, detail="No questions for this quiz.")
+    
+    teacher = getattr(quiz.user, "teacher", None)
+    return {
+        "user_id": quiz.user_id,
+        "teacher_first_name": getattr(teacher, "first_name", None),
+        "teacher_last_name": getattr(teacher, "last_name", None),
+        "group_id": quiz.group.id if quiz.group else None,
+        "group_name": quiz.group.name if quiz.group else None,
+        "subject_id": quiz.subject.id if quiz.subject else None,
+        "subject_name": quiz.subject.name if quiz.subject else None,
+        "duration": quiz.quiz_time,
+        "questions": [q.to_dict(randomize_options=True) for q in questions]
+    }
 
 
 
