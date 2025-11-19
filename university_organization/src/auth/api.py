@@ -5,7 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from .schemas.auth import (
     UserCredentials,
     RefreshToken,
-    LoginRequest
+    LoginRequest,
+    ChangePassword
 )
 from .service.auth_service import AuthService
 from core.utils.database import db_helper
@@ -33,6 +34,15 @@ async def login(
     service: AuthService = Depends(get_auth_service)
 ):
     return await service.login(credentials=login_data)
+
+
+@router.put("/change_password")
+async def change_password(
+    data: ChangePassword,
+    service: AuthService = Depends(get_auth_service)
+):
+    return await service.change_password(credentials=data)
+
 
 @router.post("/refresh")
 async def refresh_token(

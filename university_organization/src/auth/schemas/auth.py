@@ -13,6 +13,12 @@ class LoginRequest(BaseModel):
         return value.strip()
 
 
+
+class ChangePassword(BaseModel):
+    username: str
+    old_password: str
+    new_password: str
+
 class RefreshToken(BaseModel):
     refresh_token: str = Field(..., min_length=10)
         

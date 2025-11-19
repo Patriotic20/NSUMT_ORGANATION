@@ -12,6 +12,10 @@ from auth.utils.authenticate import authenticate_user_with_hemis, authenticate_u
 from auth.service.student_service import StudentService
 from auth.utils.security import create_access_token, create_refresh_token, hash_password 
 from auth.exceptions import handle_jwt_exceptions
+from schemas.auth import ChangePassword
+from sqlalchemy import update
+
+from auth.utils.security import hash_password
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -157,3 +161,42 @@ class AuthService:
 
         access_token = create_access_token(data={"username": username, "role": role})
         return {"access_token": access_token, "token_type": "bearer"}
+
+
+
+    async def change_password(self, credentials: ChangePassword):
+
+        # 1. Authenticate old password
+        user_credentials = UserCredentials(
+            username=credentials.username,
+            password=credentials.old_password
+        )
+
+        user: User | None = await authenticate_user_from_db(
+            credentials=user_credentials,
+            session=self.session
+        )
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Incorrect username or old password"
+            )
+
+        # 2. Hash new password
+        new_hashed_password = hash_password(credentials.new_password)
+
+        # 3. Update DB
+        stmt = (
+            update(User)
+            .where(User.id == user.id)
+            .values(password=new_hashed_password)
+        )
+
+        await self.session.execute(stmt)
+        await self.session.commit()
+
+        return {"message": "Password successfully changed"}
+
+
+        
