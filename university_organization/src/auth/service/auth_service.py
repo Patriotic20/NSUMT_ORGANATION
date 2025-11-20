@@ -12,7 +12,7 @@ from auth.utils.authenticate import authenticate_user_with_hemis, authenticate_u
 from auth.service.student_service import StudentService
 from auth.utils.security import create_access_token, create_refresh_token, hash_password 
 from auth.exceptions import handle_jwt_exceptions
-from schemas.auth import ChangePassword
+from auth.schemas.auth import ChangePassword
 from sqlalchemy import update
 
 from auth.utils.security import hash_password
