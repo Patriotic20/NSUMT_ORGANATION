@@ -36,7 +36,7 @@ async def get_all(
     search: str | None = None,
     pagination: GetAll = Depends(),
     service: RoleService = Depends(get_role_service),
-    _: TokenPaylod = Depends(require_permission("get_all:role"))
+    _: TokenPaylod = Depends(require_permission("get_all:roles"))
     ):
     return await service.get_all(pagination = pagination, search = search)
 
@@ -45,7 +45,7 @@ async def get_all(
 async def get_by_id(
     id: int,
     service: RoleService = Depends(get_role_service),
-    _: TokenPaylod = Depends(require_permission("get:role"))
+    _: TokenPaylod = Depends(require_permission("get:roles"))
     ):
     return await service.get_by_id(id=id)
 
@@ -55,7 +55,7 @@ async def update(
     id: int, 
     update_data: RoleUpdate,
     service: RoleService = Depends(get_role_service),
-    _: TokenPaylod = Depends(require_permission("update:role"))
+    _: TokenPaylod = Depends(require_permission("update:roles"))
     ):
     return await service.update(id=id, update_data=update_data)
 
@@ -64,7 +64,7 @@ async def update(
 async def delete(
     id: int,
     service: RoleService = Depends(get_role_service),
-    _: TokenPaylod = Depends(require_permission("delete:role"))
+    _: TokenPaylod = Depends(require_permission("delete:roles"))
     ):
     await service.delete(id=id)
     return {"message": "Role deleted successfully"}
