@@ -273,3 +273,32 @@ class ResultService:
         await self.session.commit()
 
         return {"message": "Deleted successfully"}
+    
+    
+    async def get_by_username(
+        self,
+        username: str,
+        desc: bool
+    ):
+        username = username.strip().lower()
+        stmt = select(User.id).where(User.username == username)
+        result = await self.session.execute(stmt)
+        user_id = result.scalars().first_or_none()
+        
+        if not user_id:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        stmt = select(Result).where(Result.student_id == user_id)
+        
+        if desc:
+            stmt = stmt.order_by(Result.created_at.desc())
+        else:
+            stmt = stmt.order_by(Result.created_at.asc())
+        
+        result = await self.session.execute(stmt)
+        result_data = result.scalars().all()
+        
+        return result_data

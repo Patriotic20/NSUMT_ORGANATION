@@ -52,6 +52,18 @@ async def get_by_filed(
     )
 
 
+@router.get("/get_by_username")
+async def get_by_username(
+    username: str,
+    desc: bool,
+    service: ResultService = Depends(get_service),
+    current_user: TokenPaylod = Depends(require_permission("read:result")),
+):
+    return await service.get_by_username(
+        username=username,
+        desc=desc,
+    )
+
 @router.get("")
 async def get_all(
     limit: int = 20,
