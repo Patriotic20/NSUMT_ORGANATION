@@ -283,7 +283,7 @@ class ResultService:
         username = username.strip().lower()
         stmt = select(User.id).where(User.username == username)
         result = await self.session.execute(stmt)
-        user_id = result.scalars().first_or_none()
+        user_id = result.scalars().first()
         
         if not user_id:
             raise HTTPException(
