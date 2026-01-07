@@ -278,27 +278,32 @@ class ResultService:
     async def get_by_username(
         self,
         username: str,
-        desc: bool
+        desc: bool = True,
     ):
         username = username.strip().lower()
+
+        # 1. Get user id
         stmt = select(User.id).where(User.username == username)
         result = await self.session.execute(stmt)
-        user_id = result.scalars().first()
-        
-        if not user_id:
+        user_id = result.scalar_one_or_none()
+
+        if user_id is None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="User not found"
             )
-        
-        stmt = select(Result).where(Result.student_id == user_id)
-        
-        if desc:
-            stmt = stmt.order_by(Result.created_at.desc())
-        else:
-            stmt = stmt.order_by(Result.created_at.asc())
-        
+
+        # 2. Build result query
+        stmt = (
+            select(Result)
+            .where(Result.student_id == user_id)
+            .options(                      
+                selectinload(Result.subject)
+            )
+            .order_by(
+                Result.created_at.desc() if desc else Result.created_at.asc()
+            )
+        )
+
         result = await self.session.execute(stmt)
-        result_data = result.scalars().all()
-        
-        return result_data
+        return result.scalars().all()
