@@ -7,12 +7,14 @@ from core.database.db_helper import db_helper
 from auth.schemas.auth import TokenPaylod
 from auth.utils.security import require_permission
 
+from core.logging import logging
 
 router = APIRouter(
     tags=["Quiz Process"],
     prefix="/quiz_process"
 )
 
+logger = logging.getLogger(__name__)
 
 def get_quiz_process_service(
     session: AsyncSession = Depends(db_helper.session_getter),
@@ -29,6 +31,10 @@ async def start_quiz(
     service: QuizProcessService = Depends(get_quiz_process_service),
     current_user: TokenPaylod = Depends(require_permission("read:quiz_process")),
 ):
+    logger.info(
+        f"QUIZ_PROCESS_START | user={current_user.username} | "
+        f"user_id={current_user.user_id} | quiz_id={quiz_id} | group_id={group_id}"
+    )
     """Start a quiz for a user if it's active."""
     return await service.start_quiz(
         quiz_id=quiz_id,
@@ -45,6 +51,11 @@ async def end_quiz(
     current_user: TokenPaylod = Depends(require_permission("create:quiz_process")),
 ):
     """Submit quiz answers and calculate results."""
+    
+    logger.info(
+        f"QUIZ_PROCESS_END | user={current_user.username} | "
+        f"user_id={current_user.user_id}"
+    )
     return await service.end_quiz(
         submission=submission,
         student_id=current_user.user_id,

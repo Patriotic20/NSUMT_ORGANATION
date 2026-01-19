@@ -14,6 +14,11 @@ from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from sqlalchemy import insert
 
+from core.logging import logging
+
+
+logger = logging.getLogger(__name__)
+
 class QuizProcessService:
     def __init__(self , session: AsyncSession):
         self.session = session
@@ -175,6 +180,20 @@ class QuizProcessService:
 
         # Save to DB
         await self.service.create(model=Result, obj_items=result_data)
+
+        logger.info(
+            f"QUIZ_PROCESS_END | "
+            f"user_id={student_id} | "
+            f"quiz_id={submission.quiz_id} | "
+            f"subject_id={quiz_data.subject_id} | "
+            f"group_id={quiz_data.group_id} | "
+            f"teacher_id={quiz_data.user_id} | "
+            f"total_answered={total} | "
+            f"correct={correct_count} | "
+            f"incorrect={incorrect_count} | "
+            f"percentage={percentage:.2f} | "
+            f"grade={grade}"
+        )
 
         return {
             "summary": {
