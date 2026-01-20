@@ -35,6 +35,7 @@ services:
       - DATABASE_URL=postgresql+asyncpg://qwey189t:7opsd95sd@shared_db:5432/university_shared_db
     volumes:
       - student_test_uploads:/app/uploads   # <-- add this line
+      - student_logs:/app/logs
     networks:
       - university_network
     depends_on:
@@ -78,6 +79,7 @@ services:
 volumes:
   shared_db_data:
   student_test_uploads:
+  student_logs:
 
 
 
