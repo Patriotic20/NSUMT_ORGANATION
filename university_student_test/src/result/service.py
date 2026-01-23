@@ -118,31 +118,46 @@ class ResultService:
         quiz_id: int | None = None,
     ) -> list[dict]:
         """
-        Get the last result for each student assigned to a quiz.
+        Get the highest grade result for each student.
         """
-        # Subquery to get the latest result ID for each student
-        subquery = (
+        # 1. Subquery to find the highest grade for each student
+        # If quiz_id is provided, it finds the highest grade WITHIN that quiz.
+        sub_best_grade = (
             select(
                 Result.student_id,
-                func.max(Result.id).label('max_id')
+                func.max(Result.grade).label('max_grade')
             )
             .group_by(Result.student_id)
         )
         
         if quiz_id:
-            subquery = subquery.where(Result.quiz_id == quiz_id)
+            sub_best_grade = sub_best_grade.where(Result.quiz_id == quiz_id)
         
-        subquery = subquery.subquery()
+        sub_best_grade = sub_best_grade.subquery()
         
-        # Main query
+        # 2. Subquery to handle cases where the same max grade exists multiple times
+        # We pick the latest ID (max_id) associated with that best grade.
+        sub_latest_best_id = (
+            select(
+                Result.student_id,
+                func.max(Result.id).label('max_id')
+            )
+            .join(
+                sub_best_grade,
+                and_(
+                    Result.student_id == sub_best_grade.c.student_id,
+                    Result.grade == sub_best_grade.c.max_grade
+                )
+            )
+            .group_by(Result.student_id)
+        ).subquery()
+
+        # 3. Main query
         stmt = (
             select(Result)
             .join(
-                subquery,
-                and_(
-                    Result.student_id == subquery.c.student_id,
-                    Result.id == subquery.c.max_id
-                )
+                sub_latest_best_id,
+                Result.id == sub_latest_best_id.c.max_id
             )
             .options(
                 selectinload(Result.student).selectinload(User.student),
@@ -153,7 +168,6 @@ class ResultService:
         )
         
         result = await self.session.execute(stmt)
-        # Use unique() BEFORE scalars() to remove duplicates from eager loading
         results = result.unique().scalars().all()
         
         if not results:
@@ -161,7 +175,7 @@ class ResultService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="No results found"
             )
-    
+
         return results
 
     async def get_all(
