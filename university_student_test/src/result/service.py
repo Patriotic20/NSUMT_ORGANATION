@@ -118,46 +118,50 @@ class ResultService:
         quiz_id: int | None = None,
     ) -> list[dict]:
         """
-        Get the highest grade result for each student.
+        Get the highest grade result for each student associated with a specific quiz/subject.
         """
-        # 1. Subquery to find the highest grade for each student
-        # If quiz_id is provided, it finds the highest grade WITHIN that quiz.
-        sub_best_grade = (
+        
+        # 1. First, find the highest grade achieved by each student.
+        # We filter by quiz_id here to ensure we are looking at the right pool of results.
+        sub_max_grade = (
             select(
                 Result.student_id,
                 func.max(Result.grade).label('max_grade')
             )
-            .group_by(Result.student_id)
         )
         
         if quiz_id:
-            sub_best_grade = sub_best_grade.where(Result.quiz_id == quiz_id)
+            sub_max_grade = sub_max_grade.where(Result.quiz_id == quiz_id)
         
-        sub_best_grade = sub_best_grade.subquery()
-        
-        # 2. Subquery to handle cases where the same max grade exists multiple times
-        # We pick the latest ID (max_id) associated with that best grade.
-        sub_latest_best_id = (
+        sub_max_grade = sub_max_grade.group_by(Result.student_id).subquery()
+
+        # 2. Now find the latest Result ID that matches that maximum grade.
+        # This prevents duplicates if a student got the same high grade twice.
+        sub_latest_id = (
             select(
                 Result.student_id,
-                func.max(Result.id).label('max_id')
+                func.max(Result.id).label('latest_id')
             )
             .join(
-                sub_best_grade,
+                sub_max_grade,
                 and_(
-                    Result.student_id == sub_best_grade.c.student_id,
-                    Result.grade == sub_best_grade.c.max_grade
+                    Result.student_id == sub_max_grade.c.student_id,
+                    Result.grade == sub_max_grade.c.max_grade
                 )
             )
-            .group_by(Result.student_id)
-        ).subquery()
+        )
+        
+        if quiz_id:
+            sub_latest_id = sub_latest_id.where(Result.quiz_id == quiz_id)
+            
+        sub_latest_id = sub_latest_id.group_by(Result.student_id).subquery()
 
-        # 3. Main query
+        # 3. Final Query: Fetch the full Result object using the unique IDs found above.
         stmt = (
             select(Result)
             .join(
-                sub_latest_best_id,
-                Result.id == sub_latest_best_id.c.max_id
+                sub_latest_id, 
+                Result.id == sub_latest_id.c.latest_id
             )
             .options(
                 selectinload(Result.student).selectinload(User.student),
@@ -165,15 +169,16 @@ class ResultService:
                 selectinload(Result.subject),
                 selectinload(Result.quiz),
             )
+            .order_by(Result.grade.desc()) # Keeps high achievers at the top
         )
-        
-        result = await self.session.execute(stmt)
-        results = result.unique().scalars().all()
-        
+
+        execute_result = await self.session.execute(stmt)
+        results = execute_result.unique().scalars().all()
+
         if not results:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
-                detail="No results found"
+                detail="No results found for the specified criteria."
             )
 
         return results
